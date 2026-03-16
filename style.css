@@ -61,7 +61,7 @@ body::after {
   right: calc(38vw - var(--max-width) / 2 - 2rem);
   bottom: 0;
   width: var(--line);
-  height: 18%;
+  height: 8%;
   background: var(--blue);
   pointer-events: none;
 }
@@ -146,7 +146,7 @@ nav a:hover {
   position: absolute;
   left: calc(-50vw + var(--max-width) / 2); /* reach back to screen left edge */
   bottom: 18rem; /* middle position between sidebar end and screen bottom */
-  width: calc(40vw - var(--max-width) / 2 + var(--sidebar-width) - var(--line));
+  width: calc(30vw - var(--max-width) / 2 + var(--sidebar-width) - var(--line));
   height: var(--line);
   background: var(--yellow);
 }
