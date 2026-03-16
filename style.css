@@ -311,6 +311,18 @@ h2::before {
   color: var(--blue);
 }
 
+/* Misc section lists */
+#misc ul {
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+#misc ul li {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+}
+
 /* Footer */
 footer {
   padding: 0;
