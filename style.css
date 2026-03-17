@@ -170,7 +170,7 @@ nav a:hover {
   gap: 0.35rem;
   text-decoration: none;
   color: var(--fg-muted);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   letter-spacing: 0.05em;
   transition: color 0.15s;
 }
@@ -180,8 +180,17 @@ nav a:hover {
 }
 
 .social-link svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+}
+
+.social-link.small {
+  font-size: 0.6rem;
+}
+
+.social-link.small svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Main content */
