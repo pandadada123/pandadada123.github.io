@@ -97,6 +97,34 @@ header {
   justify-content: space-between;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.social-link-icon {
+  display: inline-flex;
+  color: var(--fg-muted);
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.social-link-icon:hover {
+  color: var(--fg);
+}
+
+.social-link-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
 .site-name {
   font-size: 1.1rem;
   font-weight: 600;
@@ -153,14 +181,18 @@ nav a:hover {
 
 /* Sidebar */
 .sidebar {
-  border-right: var(--line) solid var(--red);
+  position: relative;
   padding: 2.5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  position: sticky;
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  right: 0;
   top: 0;
-  height: fit-content;
+  width: var(--line);
+  height: 120px;
+  background: var(--red);
 }
 
 .social-link {
@@ -288,7 +320,7 @@ h2::before {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .resource-list li {
@@ -297,7 +329,7 @@ h2::before {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.3rem;
+  gap: 0.0rem;
 }
 
 .resource-title {
@@ -311,13 +343,13 @@ h2::before {
 
 .resource-link {
   text-decoration: none;
-  color: var(--blue);
+  color: var(--link);
   font-size: 0.9rem;
 }
 
 .resource-link:hover {
   text-decoration: underline;
-  color: var(--blue);
+  color: var(--link-hover);
 }
 
 /* Misc section lists */
