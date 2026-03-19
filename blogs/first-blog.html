@@ -7,9 +7,11 @@
   <link rel="stylesheet" href="../style.css" />
   <script>
     MathJax = {
+      loader: {load: ['[tex]/color']},
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        packages: {'[+]': ['color']}
       }
     };
   </script>
@@ -128,12 +130,12 @@
       <p>
         For example, from the previous training steps we already have a model $\text{UNet}_{\theta}$ and it gives a prediction $\text{UNet}_{\theta}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})=0.3$.
         At this training step we know the true noise value $\tilde{\boldsymbol{\epsilon}}$ is 0.5, so we calculate the gradient and update $\theta$ to make the UNet predict 0.31 instead of 0.3 at this step.
-        Over many training iterations, it learns a function that predicts the <i>expected noise</i> added to a noisy image $\tilde{\mathbf{x}}_{\tilde{t}}$ at timestep $\tilde{t}$.
+        Over many training iterations, it learns a function that predicts the <i>expected noise</i> added to the image $\tilde{\mathbf{x}}_{\tilde{t}-1}$ at timestep $\tilde{t}$.
       </p>
 
       <h2 id="sampling">Sampling</h2>
       <p>
-        After training, we have the $\text{UNet}_{\theta^*}$. We can use it to generate new images. We start from a pure noise image and iteratively denoise it using the UNet model.
+        After training, we have the <span style="color: var(--blue);">$\text{UNet}_{\theta^*}$</span>. We can use it to generate new images. We start from a pure noise image and iteratively denoise it using the UNet model.
         This generation process is also called sampling, since at each step we are sampling from a posterior distribution $p_{\theta^*}(\mathbf{x}_{t-1} \mid \mathbf{x}_t = \tilde{\mathbf{x}}_t)$.
       </p>
 
@@ -144,14 +146,14 @@
         <div class="algorithm-body">
           <ol>
             <li><span class="algorithm-keyword">First,</span> <b>sample</b> initial noise image $\tilde{\mathbf{x}}_T$ from the prior distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
-            <li><span class="algorithm-keyword">Second,</span> let $\tilde{\mathbf{x}}_T$ and time step $T$ go through the deterministic network and get the predicted noise $\boldsymbol{\epsilon}_{\theta^*}(\tilde{\mathbf{x}}_T, T)$; <br>
-              then calculate mean $\boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T)=\frac{1}{\sqrt{\alpha_T}}\left(\tilde{\mathbf{x}}_T-\frac{1-\alpha_T}{\sqrt{1-\bar{\alpha}_T}} \boldsymbol{\epsilon}_{\theta^*}\left(\tilde{\mathbf{x}}_T, T\right)\right)$, <br>
+            <li><span class="algorithm-keyword">Second,</span> let $\tilde{\mathbf{x}}_T$ and time step $T$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{\theta^*}(\tilde{\mathbf{x}}_T, T)$</span>; <br>
+              then calculate mean $\boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T)=\frac{1}{\sqrt{\alpha_T}}\left(\tilde{\mathbf{x}}_T-\frac{1-\alpha_T}{\sqrt{1-\bar{\alpha}_T}} \textcolor[RGB]{0,61,165}{\text{UNet}_{\theta^*}(\tilde{\mathbf{x}}_T, T)}\right)$, <br>
               which fully describes the estimated posterior Gaussian distribution<br>
             $\qquad p_{\theta^*}(\mathbf{x}_{T-1} \mid \mathbf{x}_T = \tilde{\mathbf{x}}_T) = \mathcal{N}(\mathbf{x}_{T-1}; \boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T), \sigma_T^2\mathbf{I})$</li>
             <li><span class="algorithm-keyword">Third,</span> <b>sample</b> an image from this posterior $p_{\theta^*}(\mathbf{x}_{T-1} \mid \mathbf{x}_T = \tilde{\mathbf{x}}_T)$. <br>
               Since this posterior is Gaussian, this process is equivalent to computing<br>
               $\qquad \tilde{\mathbf{x}}_{T-1} = \boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T) + \sigma_T \tilde{\mathbf{z}}$, where $\tilde{\mathbf{z}}$ is a sample from $\mathcal{N}(\mathbf{0}, \mathbf{I})$<br>
-               &nbsp;&nbsp;&nbsp;&nbsp;<em>Conceptually is "mean + randomness"</em></li>
+              <em>Conceptually is "mean + randomness"</em></li>
             <li><span class="algorithm-keyword">Repeat</span> the second and third steps with $T$ times to get the final generated image $\tilde{\mathbf{x}}_0$.</li>
           </ol>
         </div>
