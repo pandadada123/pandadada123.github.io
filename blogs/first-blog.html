@@ -64,17 +64,19 @@
       </ul>
 
       <h2 id="introduction">Introduction</h2>
-      There are three perspectives to understand diffusion model <a href="https://arxiv.org/abs/2510.21890" target="_blank" class="cite">[Lai et al. 2025]</a>. The most classical one is from the VAE perspective. The most general perspective is from the score-based generative model perspective through SDE (stochastic differential equation).
-      This blog is a summary from VAE perspective. 
+      There are three perspectives to understand diffusion model <a href="https://arxiv.org/abs/2510.21890" target="_blank" class="cite">[Lai et al. 2025]</a>. The most classical one is from the hierarchical VAE perspective. The most general perspective is from the score-based generative model perspective through SDE (stochastic differential equation).
+      This blog is a summary from hierarchical VAE perspective. 
 
       <h2 id="training">Training</h2>
       <p>
         To predict the noise added at each diffusion step, the true training objective is 
         \[
           \mathcal{L} = \mathop{\mathbb{E}}\limits_{t} \ \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 } \ \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon} } 
-          \left[ \| \boldsymbol{\epsilon} - \text{UNet}_\theta(\mathbf{x}_t, t) \|^2 \right]
+          \left[ \| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\mathbf{x}_t, t) \|^2 \right]
         \]
-        where $\mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0+\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}$. <br>
+        \[
+        \text{with}\ \mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0+\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}
+        \]
         Notations $t$, $\mathbf{x}_0$, $\mathbf{x}_t$ and $\boldsymbol{\epsilon}$ are all <b>random variables</b>, <br>
         with distributions $t \sim \mathcal{U}(\{1,..., T\})$, $\mathbf{x}_0 \sim p_{\text{data}}$, and $\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ respectively. <br>
       </p>
@@ -83,9 +85,11 @@
         By drawing many samples from these distributions, the training objective can be approximated by
         \[
           \mathcal{L} = \sum_{\tilde{t}}\ \sum_{\tilde{\mathbf{x}}_0} \ \sum_{\tilde{\boldsymbol{\epsilon}}}
-          \left[ \| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_\theta(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}) \|^2 \right]
+          \left[ \| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_{\boldsymbol{\theta}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}) \|^2 \right]
         \]
-        where $\tilde{\mathbf{x}}_{\tilde{t}} = \sqrt{\bar{\alpha}_{\tilde{t}}} \tilde{\mathbf{x}}_0+\sqrt{1-\bar{\alpha}_{\tilde{t}}} \tilde{\boldsymbol{\epsilon}}$.<br>
+        \[
+        \text{with}\ \tilde{\mathbf{x}}_{\tilde{t}} = \sqrt{\bar{\alpha}_{\tilde{t}}} \tilde{\mathbf{x}}_0+\sqrt{1-\bar{\alpha}_{\tilde{t}}} \tilde{\boldsymbol{\epsilon}}
+        \]
         Notations $\tilde{t}$, $\tilde{\mathbf{x}}_0$, $\tilde{\mathbf{x}}_{\tilde{t}}$ and $\tilde{\boldsymbol{\epsilon}}$ are all <b>samples (realizations)</b>,<br>
         drawn from their respective distributions. <br>
       </p>
@@ -95,9 +99,9 @@
         Then calculate the loss for this single sample, 
         \[
           \mathcal{L} = 
-          \| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_\theta(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}) \|^2 
+          \| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_{\boldsymbol{\theta}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}) \|^2 
         \]
-        The UNet parameters $\theta$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
+        The UNet parameters ${\boldsymbol{\theta}}$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
 
       </p>
       
@@ -111,7 +115,7 @@
             <li style="text-indent: 1.5em;">Sample an image $\tilde{\mathbf{x}}_0$ from the training set $\mathcal{D}$</li>
             <li style="text-indent: 1.5em;">Sample a time step $\tilde{t}$ uniformly from $\{1, \ldots, T\}$</li>
             <li style="text-indent: 1.5em;">Sample a noise $\tilde{\boldsymbol{\epsilon}}$ from Gaussian distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
-            <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_\theta \left\| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_\theta\left(\sqrt{\bar{\alpha}_{\tilde{t}}}\tilde{\mathbf{x}}_0 + \sqrt{1 - \bar{\alpha}_{\tilde{t}}}\tilde{\boldsymbol{\epsilon}}, \tilde{t}\right) \right\|^2$</li>
+            <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_{\boldsymbol{\theta}} \left\| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_{\boldsymbol{\theta}}\left(\sqrt{\bar{\alpha}_{\tilde{t}}}\tilde{\mathbf{x}}_0 + \sqrt{1 - \bar{\alpha}_{\tilde{t}}}\tilde{\boldsymbol{\epsilon}}, \tilde{t}\right) \right\|^2$</li>
             <li style="text-indent: 1.5em;">Take a step towards the gradient's direction</li>
             <li><strong>until</strong> converged</li>
           </ol>
@@ -120,19 +124,19 @@
 
       <p>        
         At each step, we know exactly the noise value $\tilde{\boldsymbol{\epsilon}}$ added to the image $\tilde{\mathbf{x}}_{\tilde{t}-1}$ at time $\tilde{t}$, either large or small. 
-        We hope to move the UNet parameters $\theta$ in the direction of predicting $\tilde{\boldsymbol{\epsilon}}$ a little bit.
+        We hope to move the UNet parameters ${\boldsymbol{\theta}}$ in the direction of predicting $\tilde{\boldsymbol{\epsilon}}$ a little bit.
         We are not making it predits exactly $\tilde{\boldsymbol{\epsilon}}$ at this step, since we just move one gradient step forward. 
       </p>
       <p>
-        For example, from the previous training steps we already have a model $\text{UNet}_{\theta}$ and it gives a prediction $\text{UNet}_{\theta}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})=0.3$.
-        At this training step we know the true noise value $\tilde{\boldsymbol{\epsilon}}$ is 0.5, so we calculate the gradient and update $\theta$ to make the UNet predict 0.31 instead of 0.3 at this step.
+        For example, from the previous training steps we already have a model $\text{UNet}_{{\boldsymbol{\theta}}}$ and it gives a prediction $\text{UNet}_{{\boldsymbol{\theta}}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})=0.3$.
+        At this training step we know the true noise value $\tilde{\boldsymbol{\epsilon}}$ is 0.5, so we calculate the gradient and update ${\boldsymbol{\theta}}$ to make the UNet predict 0.31 instead of 0.3 at this step.
         Over many training iterations, it learns a function that predicts the <i>expected noise</i> added to the image $\tilde{\mathbf{x}}_{\tilde{t}-1}$ at timestep $\tilde{t}$.
       </p>
 
       <h2 id="sampling">Sampling</h2>
       <p>
-        After training, we have the <span style="color: var(--blue);">$\text{UNet}_{\theta^*}$</span>. We can use it to generate new images. We start from a pure noise image and iteratively denoise it using the UNet model.
-        This generation process is also called sampling, since at each step we are sampling from a posterior distribution $p_{\theta^*}(\mathbf{x}_{t-1} \mid \mathbf{x}_t = \tilde{\mathbf{x}}_t)$.
+        After training, we have the <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}$</span>. We can use it to generate new images. We start from a pure noise image and iteratively denoise it using the UNet model.
+        This generation process is also called sampling, since at each step we are sampling from a posterior distribution $p_{{\boldsymbol{\theta}}^*}(\mathbf{x}_{t-1} \mid \mathbf{x}_t = \tilde{\mathbf{x}}_t)$.
       </p>
 
       <div class="algorithm">
@@ -142,13 +146,22 @@
         <div class="algorithm-body">
           <ol>
             <li><span class="algorithm-keyword">First,</span> <b>sample</b> initial noise image $\tilde{\mathbf{x}}_T$ from the prior distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
-            <li><span class="algorithm-keyword">Second,</span> let $\tilde{\mathbf{x}}_T$ and time step $T$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{\theta^*}(\tilde{\mathbf{x}}_T, T)$</span>; <br>
-              then calculate mean $\boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T)=\frac{1}{\sqrt{\alpha_T}}\left(\tilde{\mathbf{x}}_T-\frac{1-\alpha_T}{\sqrt{1-\bar{\alpha}_T}} \textcolor[RGB]{0,61,165}{\text{UNet}_{\theta^*}(\tilde{\mathbf{x}}_T, T)}\right)$, <br>
-              which fully describes the estimated posterior Gaussian distribution<br>
-            $\qquad p_{\theta^*}(\mathbf{x}_{T-1} \mid \mathbf{x}_T = \tilde{\mathbf{x}}_T) = \mathcal{N}(\mathbf{x}_{T-1}; \boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T), \sigma_T^2\mathbf{I})$</li>
-            <li><span class="algorithm-keyword">Third,</span> <b>sample</b> an image from this posterior $p_{\theta^*}(\mathbf{x}_{T-1} \mid \mathbf{x}_T = \tilde{\mathbf{x}}_T)$. <br>
+            <li><span class="algorithm-keyword">Second,</span> let $\tilde{\mathbf{x}}_T$ and time step $T$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}(\tilde{\mathbf{x}}_T, T)$</span>; <br>
+              then calculate the mean 
+              $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\tilde{\mathbf{x}}_T, T)
+              =\dfrac{1}{\sqrt{\alpha_T}}\left(\tilde{\mathbf{x}}_T-\frac{1-\alpha_T}{\sqrt{1-\bar{\alpha}_T}} 
+              \textcolor[RGB]{0,61,165}{\text{UNet}_{{\boldsymbol{\theta}}^*}(\tilde{\mathbf{x}}_T, T)}\right)},
+              $$ 
+              which fully describes the estimated posterior Gaussian distribution
+              $$
+              \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\mathbf{x}_{T-1} \mid \mathbf{x}_T 
+              = \tilde{\mathbf{x}}_T\right) = \mathcal{N}\Bigl(\mathbf{x}_{T-1}; 
+              \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\tilde{\mathbf{x}}_T, T), \sigma_T^2\mathbf{I}\Bigr) }
+              $$
+            </li>
+            <li><span class="algorithm-keyword">Third,</span> <b>sample</b> an image from this posterior $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\mathbf{x}_{T-1} \mid \mathbf{x}_T = \tilde{\mathbf{x}}_T)}$. <br>
               Since this posterior is Gaussian, this process is equivalent to computing<br>
-              $\qquad \tilde{\mathbf{x}}_{T-1} = \boldsymbol{\mu}_{\theta^*}(\tilde{\mathbf{x}}_T, T) + \sigma_T \tilde{\mathbf{z}}$, where $\tilde{\mathbf{z}}$ is a sample from $\mathcal{N}(\mathbf{0}, \mathbf{I})$<br>
+              $\qquad \tilde{\mathbf{x}}_{T-1} = \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\tilde{\mathbf{x}}_T, T) + \sigma_T \tilde{\mathbf{z}}$, where $\tilde{\mathbf{z}}$ is a sample from $\mathcal{N}(\mathbf{0}, \mathbf{I})$<br>
               <em>Conceptually is "mean + randomness"</em></li>
             <li><span class="algorithm-keyword">Repeat</span> the second and third steps with $T$ times to get the final generated image $\tilde{\mathbf{x}}_0$.</li>
           </ol>
@@ -157,9 +170,125 @@
 
       <h2 id="derivations">Mathematical derivations summary</h2>
       <p>
-        This is a summary of the mathematical derivations of ELBO that appears everywhere. Coming soon...
-      </p>
+        This is a summary of the mathematical derivations.
+      <ul style="padding-left: 2em;">
+        <!-- <li>$T$ — total number of diffusion steps</li>
+        <li>$\mathbf{x}_0$ — original clean image</li>
+        <li>$\mathbf{x}_t$ — noisy image at timestep $t$</li>
+        <li>$\boldsymbol{\epsilon}$ — Gaussian noise sample, $\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
+        <li>$\beta_t$ — noise variance at timestep $t$ (pre-defined schedule)</li>
+        <li>$\alpha_t := 1 - \beta_t$</li>
+        <li>$\bar{\alpha}_t := \prod_{s=1}^t \alpha_s$ — cumulative product of $\alpha_s$</li>
+        <li>$q(\mathbf{x}_t \mid \mathbf{x}_{t-1})$ — forward diffusion kernel (noise-adding)</li>
+        <li>$p_\theta(\mathbf{x}_{t-1} \mid \mathbf{x}_t)$ — reverse denoising distribution (parameterised by $\theta$)</li>
+        <li>$\boldsymbol{\mu}_\theta, \mathbf{\Sigma}_\theta$ — predicted mean and covariance of the reverse process</li>
+        <li>$\tilde{\mu}_t, \tilde{\beta}_t$ — posterior mean and variance of $q(\mathbf{x}_{t-1} \mid \mathbf{x}_t, \mathbf{x}_0)$</li> -->
 
+        <li>$\beta_t$ — forward variance </li>
+        <li>$\textcolor{blue}{\tilde{\beta}_t}$ — posterior variance, additionally conditioned on clean data</li> 
+        <li>$\textcolor{Orange}{\sigma_t^2}$ — posterior variance </li>
+      </ul>
+      </p>
+      <h3>Forward process</h3>
+      <p>
+        noise-adding forward process, with pre-defined noise-variance-schedule $\{\beta_t\}_{t=1}^T$:
+        $$
+        \mathbf{x}_t= \sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+ \sqrt{\beta_t} \cdot \boldsymbol{\epsilon} \ \text{where} \ \boldsymbol{\epsilon} \sim \mathcal{N} (\mathbf{0}, \mathbf{I})
+        $$
+        such that, with $\alpha_t := 1-\beta_t$ and $\bar{\alpha}_t := \prod_{s=1}^t \alpha_s$, we have
+        $$ 
+        \begin{aligned}
+        q\left(\mathbf{x}_t \mid \mathbf{x}_{t-1}\right)&:=\mathcal{N}\left(\mathbf{x}_t ; \sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}, \ \beta_t \mathbf{I}\right) \\
+        q\left(\mathbf{x}_t \mid \mathbf{x}_0 \right)&= \mathcal{N} \left(\mathbf{x}_t ; \sqrt{\bar{\alpha}_t}\cdot \mathbf{x}_0 , \ (1-\bar{\alpha}_t) \mathbf{I} \right)
+        \end{aligned}
+        $$
+      </p>
+      <h3>Training objective</h3>
+      <p>
+        Training objective with ELBO (evidence lower bound)
+      </p>
+      <p>
+        We aim to maximize $ \log p_\theta(x_0) $, but it is intractable, so we maximize ELBO. <br>
+        Let $\mathbf{x}_{0:T} := \mathbf{x}_0, \mathbf{x}_1, ..., \mathbf{x}_T$. 
+        $$
+        \begin{aligned}
+        &\ \quad \log p_\theta(\mathbf{x}_0) \quad \text{; which is the so-called evidence}\\
+        &= \log \int p_\theta(\mathbf{x}_{0:T}) \mathrm{d} \mathbf{x}_{1:T} \\
+        &= \log \int \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)} \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \mathrm{d} \mathbf{x}_{1:T} \\
+        &= \log \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}\left[ \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \right]  \\
+        & \geq \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \left[ \log \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \right] := \text{ELBO}  \quad \text{; by Jensen's Inequality} \\
+        \text{equivalent to} \ & \ \quad  -\mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}  
+        \left[ \sum_{t=1}^T 
+        D_{\text{KL}}\Big(
+        \underbrace{\textcolor{blue}{q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t, \mathbf{x}_0\right)}}_{\textcolor{blue}{\text{known in closed Gaussian form}}} \ \Big\| \ 
+        \underbrace{\textcolor{Orange}{p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)}}_{\textcolor{Orange}{\text{the term to be trained}}}
+        \Big)   \right]
+        \end{aligned}
+        $$
+        where 
+        $
+        \textcolor{blue}{q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t, \mathbf{x}_0\right) = \mathcal{N}\Bigl(\mathbf{x}_{t-1}; \tilde{\mu}_t(\mathbf{x}_t, \mathbf{x}_0), \tilde{\beta}_t\mathbf{I}\Bigr)}$
+        with posterior mean and posterior variance
+        $\textcolor{blue}{\tilde{\mu}_t\left(\mathbf{x}_t, \mathbf{x}_0\right) = 
+        \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}\mathbf{x}_0 
+        + \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\mathbf{x}_t}$ and $\textcolor{blue}{\tilde{\beta}_t 
+        := \frac{1-\bar{\alpha}_{t-1}}{1-\bar{\alpha}_t}\beta_t}$.
+      </p>
+      <p>
+        Since when $\beta_t$ are small, $\textcolor{Orange}{p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)}$ is also Gaussian, 
+        model the posterior as an isotropic Gaussian distribution as 
+        $\textcolor{Orange}{p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right) = \mathcal{N}\Bigl(\mathbf{x}_{t-1}; \mathbf{\mu}_\theta(\mathbf{x}_t,t), \sigma_t^2 \mathbf{I}\Bigr)}$.
+        The posterior variance $\textcolor{Orange}{\sigma_t^2}$ can be empirically predefined as $\beta_t$ or $\textcolor{blue}{\tilde{\beta}_t}$, or an interpolation between these two, or a learnable parameter.
+        Then this posterior distribution is fully described by the mean $\textcolor{Orange}{\mathbf{\mu}_\theta(\mathbf{x}_t,t)}$.
+      </p>
+      <p>
+        Thanks to the above known Gaussian and parameterized Gaussian, the KL divergence can have a closed form solution.
+        The training objective (mean-prediction) becomes
+        $$
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}
+        \left[\sum_{t=1}^T \frac{1}{2\sigma_t^2} 
+        \Bigl\| \textcolor{blue}{\tilde{\mathbf{\mu}}_t(\mathbf{x}_t, \mathbf{x}_0)} 
+        - \textcolor{Orange}{\mathbf{\mu}_\theta(\mathbf{x}_t, t)} 
+        \Bigr\|^2 \right]
+        $$
+      </p>
+      <p>
+        With an reparameterization trick, we are able to adopt the noise prediction ($\epsilon$-prediction) instead of directly using the mean prediction. 
+        The training objective ($\epsilon$-prediction) is 
+        $$
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{q(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}
+        \left[ \sum_{t=1}^T \frac{\beta_t^2}{2\textcolor{orange}{\sigma_t^2} \alpha_t (1 - \bar{\alpha}_t)} \Bigl\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\Bigr\|^2 \right]
+        $$
+        Equivalent to
+        $$
+        \begin{gathered}
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0}
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}}
+        \left[ \sum_{t=1}^T \frac{\beta_t^2}{2\textcolor{orange}{\sigma_t^2} \alpha_t (1 - \bar{\alpha}_t)} \Bigl\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\Bigr\|^2 \right] \\
+        \text{with}\ \mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}
+        \end{gathered}
+        $$
+        (Can we drop the constant term? but it is across different time step here? t is not random here.)
+        In the original DDPM paper, the authors found that it is benficial to use a variant as 
+        $$
+        \begin{gathered}
+        \mathop{\mathbb{E}}\limits_{t}
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0}
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}}
+        \left[ \sum_{t=1}^T \Bigl\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\Bigr\|^2 \right] \\
+        \text{with}\ \mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon},\  \text{and} \  t \sim \mathcal{U}(\{1,..., T\})
+        \end{gathered}
+        $$
+      </p>
+      <p>
+        The empirical choice of $\textcolor{Orange}{\sigma_t^2}$ was later validated by the continuous SDE formulation with diffusion coefficient $g(t)$.
+        Consider the continuous time limit $\Delta t \to 0$, 
+        let $\beta(t):=\beta_t \Delta t$, with the definition of $\bar{\alpha}_t$ we have $\bar{\alpha}_t \approx e^{-\int_0^t \beta(s) d s}$.
+        Then we can compute $\bar{\alpha}_{t-\Delta t}$ and $\tilde{\beta}_t=\beta(t) \Delta t \frac{1-\bar{\alpha}_{t-\Delta t}}{1-\bar{\alpha}_t}$.
+        As $\Delta t \to 0$, we have $\textcolor{blue}{\tilde{\beta}_t} \rightarrow \beta_t$. 
+        Thus, the distinction between $\textcolor{blue}{\tilde{\beta}_t}$ and $\beta_t$ is only a finite-step artifact, and both work well in practice.
+
+      </p>
 
     </div>
   </article>

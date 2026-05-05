@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog Post — Wenxin Pan</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script>
+    MathJax = {
+      loader: {load: ['[tex]/color']},
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        packages: {'[+]': ['color']}
+      }
+    };
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="site-name">Wenxin Pan</a>
+      <nav>
+        <a href="/#blogs">Blogs</a>
+        <a href="/#resources">Resources</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">&#9680;</button>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-page">
+    <header class="blog-header">
+<h1>Score-based Diffusion Models and Their Applications for Inverse Problems</h1>
+      <div class="blog-meta">
+        March 19, 2026 &nbsp;&middot;&nbsp; 5 min read &nbsp;&middot;&nbsp; Wenxin Pan
+      </div>
+    </header>
+
+    <nav class="toc">
+      <details open>
+      <summary class="toc-title">Table of Contents</summary>
+      <ol>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#method">Method</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ol>
+      </details>
+    </nav>
+
+    <div class="blog-body">
+
+      <h2 id="introduction">Introduction</h2>
+      <p> 
+      Forward SDE: <i>(stochastic)</i>
+        \[
+        \mathrm{d} \mathbf{x}_t = \mathbf{f}(\mathbf{x}_t, t) \mathrm{d} t + g(t) \mathrm{d} \mathbf{w}_t
+        \]
+      Reverse SDE: <i>(stochastic)</i>
+        \[
+        \mathrm{d} \mathbf{x}_t = \left[ \mathbf{f}(\mathbf{x}_t, t) - g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \right] \mathrm{d} t + g(t) \mathrm{d} \mathbf{\bar{w}}_t
+        \]
+      The <i>corresponding</i> probability flow ODE: <i>(deterministic)</i>
+        \[
+        \mathrm{d} \mathbf{x}_t = \left[ \mathbf{f}(\mathbf{x}_t, t) - \frac{1}{2}g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \right] \mathrm{d} t 
+        \]
+      </p>
+      <p>
+        <i>Corresponding</i> means the probability flow ODE is designed to share the same marginal distribution $\{p_t(\mathbf{x}_t)\}_{t=0}^T$ as the SDE. Notably, there is a factor $\frac{1}{2}$.
+      </p>
+      <p>
+        Notations:
+        <ul class="link-list">
+          <li>$\mathbf{f}(\cdot, t): \mathbb{R}^d \to \mathbb{R}^d$ is the <i>drift coefficient</i> of $\mathbf{x}_t \in \mathbb{R}^d$, deterministic
+            <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--green);">If it is linear in $\mathbf{x}_t$, it is often written as $\mathbf{f}(\mathbf{x}_t, t) = f(t)\mathbf{x}_t$ with $f(t): \mathbb{R} \to \mathbb{R}$ (usually in Variance Preserving (VP) SDEs). Same for the reverse SDE. This is an important point in score training.</div>
+          </li>
+          <li>$g(\cdot): \mathbb{R} \to \mathbb{R}$ is the <i>diffusion coefficient</i>, deterministic, controls how much randomness is added</li>
+          <li>$\{\mathbf{w}_t\}_{t=0}^T$: standard Wiener process, represents the integral of white Gaussian noise</li>
+              <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--fg-muted);">The function $\mathbf{w}_t$ is continuous everywhere but differentiable nowhere, $\frac{\mathrm{d}\mathbf{w}_t}{\mathrm{d} t}$ does not exist.</div>
+          <li>$\mathrm{d}\mathbf{w}_t$: infinitesimal white (Gaussian) noise $\mathcal{N}(\mathbf{0}, \mathrm{d}t \mathbf{I})$</li>
+          <li>$\{\bar{\mathbf{w}}_t\}_{t=T}^0$: standard Wiener process in the reverse-time direction. The $\mathrm{d} t$ is an infinitesimal negative time step in the reverse SDE.</li>
+        </ul>
+      </p>
+      <p>
+        The forward process is known and designed.
+        The generation process is based on the reverse SDE, but we don't know the score function in this reverse SDE. 
+        So we need to utilize the forward SDE to train a UNet $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ to predict the score function at each diffusion step, such that we are able to use the reverse process to generate new images.
+      </p>
+
+    <h2 id="training">Training</h2>
+      <p>
+        To predict the <span style="color: var(--red);">score function</span> at each diffusion step, the true training objective is 
+        \[
+        \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_t \sim p_t(\mathbf{x}_t)} 
+        \left[ \| \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) - \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \|^2 \right]
+        \]
+        We are not able to train $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ with this loss function since we don't know $p_t(\mathbf{x}_t)$ (and its score is what we want to estimate!).
+        The magic is to use a conditional trick. By Vincent, this loss is equivalent to,
+        \[
+          \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+          \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
+          \mathop{\mathbb{E}}\limits_{\mathbf{x}_t \sim p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
+          \left[ 
+          \| 
+          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) - \color{Purple}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
+          \color{black}
+          \|^2 
+          \right]
+        \]
+      </p>
+      <p>
+        When we design function $\mathbf{f}(\mathbf{x}_t, t)$ to be linear in $\mathbf{x}_t$ as $\mathbf{f}(\mathbf{x}_t, t) = f(t) \mathbf{x}_t$, we have $\textcolor{green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$ to be Gaussian with closed form, then the objective function becomes tractable.
+      </p>
+      <p>
+        In general, let this known Gaussian distribution be $\mathcal{N}(\mathbf{x}_t; \ \mu_t\mathbf{x}_0, \sigma_t^2\mathbf{I})$, functions $\mu(t)$ and $\textcolor{Orange}{\sigma(t)}$ can be derived from function $f(t)$ and $g(t)$.
+
+        The score function can be calculated in closed-form as $\color{Purple}{\nabla_{\mathbf{x}_t} \log p_{0t}
+        (\mathbf{x}_t | \mathbf{x}_0)}
+        \color{black}=-\frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\sigma_t^2}$.
+        
+        The training objective becomes
+        $$
+        \begin{aligned}
+        &\mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+          \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
+          \mathop{\mathbb{E}}\limits_{\mathbf{x}_t \sim p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
+          \left[ 
+          \left\| 
+          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) + \frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\sigma_t^2}
+          \right\|^2 
+          \right] \\
+          =
+        &\mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}
+        \left[\left\|\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)+
+        \frac{\boldsymbol{\epsilon}}{\sigma_t}
+        \right\|_2^2\right] \\
+        \text{equivalent to}\ 
+        &
+        \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}
+        \left[\left\|\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) \cdot \sigma_t +
+        \boldsymbol{\epsilon}
+        \right\|_2^2\right]
+        \end{aligned}
+        $$
+        $$
+        \text{with}\ \mathbf{x}_t = \mu_t \mathbf{x}_0+\sigma_t \cdot\boldsymbol{\epsilon}
+        $$
+      </p>
+      <p>
+        Similar to DDPM, with SGD (stochastic gradient descent), the loss function in each iteration is,
+        In each iteration, we pick an image $\tilde{\mathbf{x}}_0$ from the training set, a noise value $\tilde{\boldsymbol{\epsilon}}$, and a time value $\tilde{t}$.
+        Then calculate the loss for this single sample, 
+        \[
+          \mathcal{L} = 
+          \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\sigma_{\tilde{t}} + \tilde{\boldsymbol{\epsilon}}  \right\|^2 
+        \]
+        The UNet parameters $\boldsymbol{\phi}$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
+      </p>
+
+      <div class="algorithm">
+        <div class="algorithm-header">
+          <strong>Algorithm 1</strong> Training with SGD
+        </div>
+        <div class="algorithm-body">
+          <ol>
+            <li><strong>repeat</strong></li>
+            <li style="text-indent: 1.5em;">Sample an image $\tilde{\mathbf{x}}_0$ from the training set $\mathcal{D}$</li>
+            <li style="text-indent: 1.5em;">Sample a time step $\tilde{t}$ uniformly from $\{1, \ldots, T\}$</li>
+            <li style="text-indent: 1.5em;">Sample a noise $\tilde{\boldsymbol{\epsilon}}$ from Gaussian distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
+            <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_\phi \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\sigma_{\tilde{t}} + \tilde{\boldsymbol{\epsilon}} \right\|^2$</li>
+            <li style="text-indent: 1.5em;">Take a step towards the gradient's direction</li>
+            <li><strong>until</strong> converged</li>
+          </ol>
+        </div>
+      </div>
+
+      <h3>Key points of training:</h3>
+      <ul class="link-list">
+        <li>We don't know $p_t(\mathbf{x}_t)$, and we don't know the score $\textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)}$.</li>
+        <li>We need to train a network to approximate the score $\textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)}$.</li>
+        <li>The training loss is derived based on the facts that
+          <ul class="link-list">
+            <li>We can equivalently write the loss with $\textcolor{Purple}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
+            <li>We can analytically derive $\textcolor{Purple}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Connection to DDPM and noise predictor</h3>
+      <p>
+        In DDPM we defined the kernels 
+        $$
+        p(\mathbf{x}_t | \mathbf{x}_{t-1}) 
+        =\sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+\sqrt{\beta_t} \cdot \boldsymbol{\epsilon}
+        $$
+        $$
+        \textcolor{green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
+        =\sqrt{\bar{\alpha}_t} \cdot \mathbf{x}_0 + \left(1-\bar{\alpha}_t\right) \cdot \boldsymbol{\epsilon}
+        $$
+        With SDE formulation, this is equivalent to have 
+        $$
+        f(t) = -\frac{1}{2}\beta(t) , \quad g(t) = \sqrt{\beta(t)}
+        $$
+        $$
+        \mu(t) = e^{-\frac{1}{2} \int_0^t \beta(s) \mathrm{d} s}  \approx \sqrt{\bar{\alpha}_t}, 
+        \quad \textcolor{Orange}{\sigma(t)}  = \sqrt{1-e^{-\int_0^t \beta(s) \mathrm{d} s}} \approx \sqrt{1-\bar{\alpha}_t}
+        $$
+        with relations $\alpha(t) = 1-\beta(t)$, $\bar{\alpha}(t) = \prod_{s=1}^t \alpha(s)$, and $\log \left(1-\beta_s\right) \approx-\beta_s$ when $\beta_s$ is small.<br>
+        [is the mean $\mu(t)$ useful here? or only the variance $\sigma(t)$ is useful?]
+
+      </p>
+      <p>
+        A score predictor and a noise predictor are equivalent, only with a difference in a scaling factor as
+        $$
+        \textcolor{red}{\mathbf{s}_{\phi^*}(\mathbf{x}_t, t)} = 
+        \textcolor{Orange}{-\frac{1}{\sqrt{1-\bar{\alpha}_t}}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right) 
+        = \textcolor{Orange}{- \frac{1}{\sigma_t}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right)
+        $$
+        The choice of predictors is not a fundamental modeling difference but only a implementation difference and can be used interchangeably. <br>
+        Taking into account of the scaling factor, the above training loss for score predictor is equivalent to the training loss for noise predictor in DDPM.
+      </p>
+      
+
+      <h2 id="sampling">Sampling</h2>
+      <p>
+        After training, we have the <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\phi}}^*}$</span> or $\textcolor{red}{\boldsymbol{s}_{\boldsymbol{\phi}^*}(\mathbf{x}_t, t)}$. Thus, we have the following known reverse process and we can use it to generate new images.
+        $$
+        \mathrm{d} \mathbf{x}_t=\left[\mathbf{f}(\mathbf{x}_t, t)-g(t)^2 \color{red}\boldsymbol{s}_{\boldsymbol{\phi}^*}(\mathbf{x}_t, t)\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t
+        $$
+        The most simple one is the Euler-Maruyama method.
+      </p>
+
+      <div class="algorithm">
+        <div class="algorithm-header">
+          <strong>Algorithm 2</strong> Posterior sampling by Euler-Maruyama
+        </div>
+        <div class="algorithm-body">
+          <ol>
+            <li style="text-indent: 1.5em;">Initialize $t \leftarrow T$ and iterate until $t \approx 0$ ($t$ here acts as an iteration parameter, not a random variable or a realization)</li>
+            <li style="text-indent: 1.5em;">Let $\mathrm{d} \mathbf{x} = \mathbf{x}_{t+\Delta t}-\mathbf{x}_t$, $\mathrm{d}t= |\Delta t|$, $\mathrm{d} \mathbf{\bar{w}}_t = \sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t$ 
+              with sample $\boldsymbol{\epsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$. Then 
+                $$
+                  \mathbf{x}_{t+\Delta t} 
+                  = \underbrace{
+                  \mathbf{x}_t + \left[\mathbf{f}(\mathbf{x}_t, t) - g(t)^2 \color{red}\boldsymbol{s}_{\boldsymbol{\phi}^*}(\mathbf{x}_t, t)\right] \Delta t }_{\color{red}\text{mean}}
+                  + 
+                  \underbrace{
+                  g(t)\sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t
+                  }_{\color{NavyBlue}\text{randomness}}
+                $$</li>
+              Notice that here $\Delta t <0$.
+            <li style="text-indent: 1.5em;">This discretization step is a tractable approximation of the true posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t})$ with $\Delta t <0$. 
+              The process is equivalent to <b>sampling</b> from this distribution, which is Gaussian $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t})
+                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\color{red}\text{mean} 
+                \color{black},
+                g(t)^2 |\Delta t| )$.</li>
+            <li style="text-indent: 1.5em;">The last step does not include any noise but only return the <span style="color: var(--red);">mean</span>.</li>
+          </ol>
+        </div>
+      </div>
+
+      For a VP-SDE like DDPM, the intial image is sampled from $\mathcal{N}(\mathbf{0}, \mathbf{I})$ at $t=T$.
+      For a typical-schedule VE-SDE with $\sigma_{\min }=\sigma_1<\sigma_2<\cdots<\sigma_N=\sigma_{\max }$, the initial image is sampled from $\mathcal{N}(\mathbf{0}, \sigma_{\max }^2 \mathbf{I})$ at $t=T$.
+
+      <h2 id="inverse-problem-solving">For Inverse Problem Solving</h2>
+      <p>
+      Assume that we know the forward physical model $\mathbf{y} = \mathcal{A}(\mathbf{x}_0) + \boldsymbol{\epsilon}$, where $\mathcal{A}(\cdot)$ is a known operator, $\mathbf{x}_0$ is the ground-truth clean image, and $\boldsymbol{\epsilon}$ is the noise. We want to solve the inverse problem by sampling from the posterior distribution $p(\mathbf{x}_0 \mid \mathbf{y})$.
+      <p></p>
+      </p>
+      <h3 id="conditional-generation-to-inverse-problems">Conditional Generation to Inverse Problems</h3>
+      In inverse problem solving, we want to sample from $p(\mathbf{x} \mid \mathbf{y})$ instead of $p(\mathbf{x})$. The key is to modify the reverse SDE or probability flow ODE by replacing $\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right)$ with $\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \mid \mathbf{y}\right)$.
+      </p>      <p>
+      By modifying only the sampling process, we can use the same pre-trained model for unconditional generation for conditional generation and solving inverse problem is one of the categories of conditional generation.
+      The conditional generation generates a subset of what unconditional generation can generate, based on the given $\mathbf{y}$, which can be a label or a measurement or a prompt.
+      For example, if an unconditional generative model can generate animals, then the conditional generative model can generate dogs based on the given label $\mathbf{y}=\text{"dog"}$.
+      To solve inverse problem, the reconstruction image is then generated by the pre-trained unconditional generative model being controled by the measurement $\mathbf{y}$.
+      <p>
+        Unconditional generation
+        $$
+        \mathrm{d} \mathbf{x}_t
+        =\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right)}\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t
+        $$
+
+        Conditional generation (controllable generation)
+
+        with the key fact that $p_t\left(\mathbf{x}_t \mid \mathbf{y}\right) = \frac{p_t (\mathbf{x}_t) \cdot p_t(\mathbf{y} \mid \mathbf{x}_t)}{p_t (\mathbf{y})}$ and $\nabla_{\mathbf{x}_t} p_t (\mathbf{y}) =0$,
+        Then the reverse SDE becomes
+        $$
+        \begin{aligned}
+        \mathrm{d} \mathbf{x}_t
+        &=\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \mid \mathbf{y}\right)}\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t \\
+        &=\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\left[\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right) 
+        + \textcolor{magenta}{
+          \nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}
+        \right]}
+        \right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t 
+        , \  t \in[0,1].
+        \end{aligned}
+        $$
+      </p>
+      
+      <p>
+        In this conditional generation,
+      </p>
+      <ul class="link-list">
+        <li><strong>Unconditional score (Prior score)</strong> $\textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t) \approx \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t)}$ can be estimated by training on a natural image dataset, by unconditional score model.</li>
+        <li><strong>Conditional score (Likelihood score)</strong> $\textcolor{magenta}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{y} \mid \mathbf{x}_t)}$ can be estimated from the known forward physical model.</li>
+      </ul>
+
+      <h3 id="sampling-in-inverse-problem-solving">Sampling in inverse problem solving</h3>
+
+      <ul class="link-list">
+        <li>Similar to previous discussion on the sampling process of unconditional score-based model. <span style="color: magenta;">[Modifications in Magenta compared with Algorithm 2]</span></li>
+      </ul>
+
+      <div class="algorithm">
+        <div class="algorithm-header">
+          <strong>Algorithm 3</strong> Posterior sampling in inverse problem solving by Euler-Maruyama
+        </div>
+        <div class="algorithm-body">
+          <ol>
+            <li>Initialize $t \leftarrow T$, and iterate until $t \approx 0$.</li>
+            <li style="text-indent: 1.5em;">Let $\mathrm{d} \mathbf{x} = \mathbf{x}_{t+\Delta t}-\mathbf{x}_t$, $\mathrm{d}t= |\Delta t|$, $\mathrm{d} \mathbf{\overline{w}}_t = \sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t$ 
+              with sample $\boldsymbol{\epsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$
+              <br><br>
+              Then 
+                $$
+                  \mathbf{x}_{t+\Delta t} 
+                  = \underbrace{
+                  \mathbf{x}_t + \left[\mathbf{f}(\mathbf{x}_t, t) - g(t)^2 \left[\color{red}\mathbf{s}_{\boldsymbol{\phi}^*}(\mathbf{x}_t, t)
+                  \color{magenta}
+                  + \nabla_{\mathbf{x}_t} \log p_t(\mathbf{y} \mid \mathbf{x}_t)
+                  \color{black}
+                  \right]\right] \Delta t }_{\color{magenta}\text{mean}}
+                  + 
+                  \underbrace{
+                  g(t)\sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t
+                  }_{\color{NavyBlue}\text{randomness}}
+                $$</li>
+            <li style="text-indent: 1.5em;">Notice that here $\Delta t < 0$.</li>
+            <li style="text-indent: 1.5em;">This discretization step is a tractable approximation of the true posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \color{magenta}\mathbf{y}\color{black})$ with $\Delta t < 0$. 
+              The process is equivalent to <b>sampling</b> from this distribution, which is Gaussian $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \color{magenta}\mathbf{y}\color{black})
+                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\color{magenta}\text{mean} 
+                \color{black},
+                g(t)^2 |\Delta t| )$.</li>
+          </ol>
+        </div>
+      </div>
+
+
+      <h3 id="estimation-of-likelihood-score">Estimation of $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$</h3>
+      <p>
+        The above sampling already assumes that we are able to estimate $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$. But how should we estimate it?
+        The key issue is $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$ is not known directly and can only be <span style="color: magenta;">estimated</span>. What we know is the score $\nabla_{\mathbf{x}_0} \log p_0\left(\mathbf{y} \mid \mathbf{x}_0 \right)$ with clean image $\mathbf{x}_0$, not with the noisy image $\mathbf{x}_t$.
+        There various methods trying to approximate $p(\mathbf{y} \mid \mathbf{x}_t)$.
+        One approach is to so-called projection-based method.
+        Another more general approach is by Chung et al. to approximate ... directly.
+      </p>
+      <p>
+        $$
+        \begin{aligned}
+        p(\mathbf{y} \mid \mathbf{x}_t) 
+        & =\int p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t) \cdot p(\mathbf{x}_0 \mid \mathbf{x}_t) \mathrm{d} \mathbf{x}_0 \\
+        & =\int p(\mathbf{y} \mid \mathbf{x}_0) \cdot p(\mathbf{x}_0 \mid \mathbf{x}_t) \mathrm{d} \mathbf{x}_0 \\
+        & =\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[p(\mathbf{y} \mid \mathbf{x}_0)] \\
+        & \simeq  p(\mathbf{y} \mid \textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}) \quad \textit{; key approximation}\\
+        & \textcolor{blue}{:=} p(\mathbf{y} \mid \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)})
+        \end{aligned}
+        $$
+        where $\textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}$ is referred to as the posterior mean of $\mathbf{x}_0$ given $\mathbf{x}_t$,
+        which can be also written as $\textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 ]}$.
+        This conditional expectation is a function of random variable $\mathbf{x}_t$, thus we can written it as $\textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)}$,
+        which can be estimated by the pre-trained unconditional score-predictor model $\textcolor{red}{\boldsymbol{s}_{\phi^*}(\boldsymbol{x}_t, t)}$ as
+        $$
+        \begin{aligned}
+        \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) :=\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
+        & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t\right)}\right) \quad \textit{; by Tweedie’s formula} \\
+        & \simeq \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\boldsymbol{s}_{\phi^*}(\mathbf{x}_t, t)}\right)
+        \end{aligned}
+        $$
+        In this way, $p(\mathbf{y} \mid \mathbf{x}_t)$ is approximated by the tractable $p(\mathbf{y} \mid \hat{\mathbf{x}}_0(\mathbf{x}_t))$.
+        
+        The above <i>Tweedie’s formula</i> becomes
+        $$
+        \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)} \simeq \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)
+        \textcolor{grey}{:= \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t-\sigma_t \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)}
+        $$
+        </p>
+        
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+          <div class="container">
+            <div class="title">Algorithm 4: DPS — Diffusion Posterior Sampling (Noise-Prediction Form)</div>
+
+            <div class="require">
+              <strong>Require:</strong>
+              \(T,\; y,\; \{\zeta_t\}_{t=1}^T,\; \{\sigma_t\}_{t=1}^T\)
+            </div>
+
+            <ol>
+              <li>\(x_T \sim \mathcal{N}(0, I)\)</li>
+              <li>
+                <strong>for</strong> \(t = T\) <strong>to</strong> \(1\) <strong>do</strong>
+                <div class="indent block">\(\hat{\epsilon} \leftarrow \epsilon_{\theta^*}(x_t, t)\)</div>
+                <div class="indent block">
+                  \(\hat{x}_0 \leftarrow
+                  \dfrac{1}{\sqrt{\bar{\alpha}_t}}\left(x_t \textcolor{Orange}{- \sqrt{1-\bar{\alpha}_t}}\,\hat{\epsilon}\right)
+                  \)
+                </div>
+                <div class="indent block">\(z \sim \mathcal{N}(0, I)\)</div>
+                <div class="indent block">
+                  \(x_{t-1} \leftarrow
+                  \dfrac{1}{\sqrt{\alpha_t}}
+                  \left(
+                    x_t
+                    -
+                    \dfrac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\hat{\epsilon}
+                  \right)
+                  + \sigma_t z\)
+                </div>
+                <div class="indent block">
+                  \(x_{t-1} \leftarrow x_{t-1} - \zeta_t \nabla_{x_t}
+                  \left\| y - \mathcal{A}(\hat{x}_0) \right\|_2\)
+                </div>
+                <div class="indent block"><strong>end for</strong></div>
+              </li>
+              <li><strong>return</strong> \(\hat{x}_0\)</li>
+            </ol>
+
+          </div>
+        </div>
+
+        <div>
+          <div class="container">
+            <div class="title">Algorithm 5: DPS — Diffusion Posterior Sampling (Score-Prediction Form)</div>
+
+            <div class="require">
+              <strong>Require:</strong>
+              \(T,\; y,\; \{\zeta_t\}_{t=1}^T,\; \{\sigma_t\}_{t=1}^T\)
+            </div>
+
+            <ol>
+              <li>\(x_T \sim \mathcal{N}(0, I)\)</li>
+              <li>
+                <strong>for</strong> \(t = T\) <strong>to</strong> \(1\) <strong>do</strong>
+                <div class="indent block">\(\hat{s} \leftarrow s_{\phi^*}(x_t, t)\)</div>
+
+                <div class="indent block">
+                  \(\hat{x}_0 \leftarrow
+                  \dfrac{1}{\sqrt{\bar{\alpha}_t}}
+                  \left(
+                    x_t + \textcolor{Orange}{(1-\bar{\alpha}_t)}\, \hat{s}
+                  \right)\)
+                </div>
+
+                <div class="indent block">\(z \sim \mathcal{N}(0, I)\)</div>
+
+                <div class="indent block">
+                  <span class="highlight">
+                    \(x_{t-1} \leftarrow
+                    \dfrac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,x_t
+                    +
+                    \dfrac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{x}_0
+                    +
+                    \sigma_t z\)
+                  </span>
+                </div>
+
+                <div class="indent block">
+                  \(x_{t-1} \leftarrow x_{t-1} - \zeta_t \nabla_{x_t}
+                  \left\| y - \mathcal{A}(\hat{x}_0) \right\|_2\)
+                </div>
+
+                <div class="indent block"><strong>end for</strong></div>
+              </li>
+              <li><strong>return</strong> \(\hat{x}_0\)</li>
+            </ol>
+
+            
+          </div>
+        </div>
+      </div>
+
+      <p>
+        The two updates of posterior mean of unconditional model are exactly the same. 
+        Since in both algorithms $\hat{\mathbf{x}}_0$ is estimated, the following calculation be used for both algorithms.
+        (The DPS+pointcloud loop is using exactly the noise-prediction form, the orginal DPS is using noise-prediction with the following updatef for $x_{t-1}$.)
+        $$
+        \tilde{\mu}_t(\mathbf{x}_t, \hat{\mathbf{x}}_0) = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}\hat{\mathbf{x}}_0
+        $$
+        subsituted in 
+        \(\hat{x}_0 = \dfrac{1}{\sqrt{\bar{\alpha}_t}}\left(x_{t} - \sqrt{1-\bar{\alpha}_{t}}\,\epsilon_\phi(x_{t}, t)\right)\)
+        we have the familar $\boldsymbol{\epsilon}$-based DDPM reverse mean,
+        $$
+        \tilde{\mu}_t(\mathbf{x}_t, \hat{\mathbf{x}}_0) 
+        = \frac{1}{\sqrt{\alpha_t}}\left(x_t-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}} \epsilon_\phi\left(x_t, t\right)\right)
+        $$
+
+
+      </p>
+
+      <h2 id="conclusion">Conclusion</h2>
+      <p>
+        Conclusion content goes here.
+      </p>
+
+    </div>
+  </article>
+
+  <footer>
+    <div class="footer-inner">
+      <p>&copy; 2026 Wenxin Pan</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      if (saved) document.documentElement.setAttribute("data-theme", saved);
+      else if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.setAttribute("data-theme", "dark");
+    })();
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+  </script>
+</body>
+</html>
