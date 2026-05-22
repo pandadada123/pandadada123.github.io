@@ -13,6 +13,9 @@
   --blue:   #003DA5;
   --yellow: #F5C400;
   --line:   3px;
+
+  --algorithm-bg:      #f4f4f4;
+  --algorithm-divider: #ddd;
 }
 
 [data-theme="dark"] {
@@ -22,6 +25,9 @@
   --border: #e0e0e0;
   --link: #6b9ff5;
   --link-hover: #4d8ef0;
+
+  --algorithm-bg:      #2a2a2c;
+  --algorithm-divider: #3a3a3c;
 }
 
 /* Reset */
@@ -385,6 +391,7 @@ footer {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 3rem 4rem 4rem 4rem;
+  position: relative;
 }
 
 /* Blog header */
@@ -421,14 +428,21 @@ footer {
   color: var(--fg-muted);
 }
 
+.last-updated {
+  margin-left: 0.25em;
+}
+
 /* Table of contents */
 .toc {
-  border: var(--line) solid var(--border);
-  border-left: var(--line) solid var(--red);
-  border-right: var(--line) solid var(--blue);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 2.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0;
   font-size: 0.9rem;
+  position: fixed;
+  top: 7rem;
+  left: max(1rem, calc((100vw - var(--max-width)) / 2 - 20rem));
+  width: 12rem;
+  background: var(--bg);
+  z-index: 10;
 }
 
 .toc-title {
@@ -479,6 +493,11 @@ details[open] .toc-title::after {
   color: var(--fg);
 }
 
+.toc a.active {
+  color: var(--fg);
+  font-weight: 700;
+}
+
 /* Blog body */
 .blog-body h2 {
   font-size: 1.3rem;
@@ -514,6 +533,23 @@ details[open] .toc-title::after {
 
 .blog-body a {
   color: var(--link);
+}
+
+.blog-figure {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.blog-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.blog-figure figcaption {
+  margin-top: 0.5rem;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 .link-list {
@@ -587,16 +623,36 @@ a.cite:hover {
   text-decoration: underline;
 }
 
+.comment-ref {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  border-radius: 3px;
+  padding: 0 0.3em;
+  vertical-align: middle;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.comment-ref:hover {
+  background: color-mix(in srgb, var(--blue) 22%, transparent);
+}
+
 /* Algorithm block */
 .algorithm {
   margin: 1.5rem 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--algorithm-bg);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .algorithm-header {
   padding: 0.5rem 1rem;
   font-size: 1rem;
+  border-bottom: 1px solid var(--algorithm-divider);
 }
 
 .algorithm-body {
@@ -634,6 +690,15 @@ a.cite:hover {
 }
 
 /* Responsive */
+@media (max-width: 1180px) {
+  .toc {
+    position: static;
+    width: auto;
+    margin-bottom: 2.5rem;
+    animation: none;
+  }
+}
+
 @media (max-width: 600px) {
   .layout {
     grid-template-columns: 1fr;
