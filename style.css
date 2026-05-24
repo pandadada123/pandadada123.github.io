@@ -60,23 +60,6 @@ body {
   position: relative;
 }
 
-/* Blue vertical line — rises from page bottom at screen right side */
-body::after {
-  content: '';
-  position: absolute;
-  right: calc(38vw - var(--max-width) / 2 - 2rem);
-  bottom: 0;
-  width: var(--line);
-  height: 8%;
-  background: var(--blue);
-  pointer-events: none;
-}
-
-/* Hide blue line on blog pages */
-.blog-page ~ footer ~ body::after,
-body:has(.blog-page)::after {
-  display: none;
-}
 
 a {
   color: var(--link);
@@ -164,25 +147,11 @@ nav a:hover {
   line-height: 1;
 }
 
-/* Layout: sidebar + main */
+/* Layout */
 .layout {
   max-width: var(--max-width);
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
   min-height: calc(100vh - 6px - 57px - 53px); /* strip + header + footer */
-  position: relative;
-}
-
-/* Yellow horizontal line — from screen left edge to sidebar/main divider */
-.layout::before {
-  content: '';
-  position: absolute;
-  left: calc(-50vw + var(--max-width) / 2); /* reach back to screen left edge */
-  bottom: 18rem; /* middle position between sidebar end and screen bottom */
-  width: calc(30vw - var(--max-width) / 2 + var(--sidebar-width) - var(--line));
-  height: var(--line);
-  background: var(--yellow);
 }
 
 /* Sidebar */
@@ -233,13 +202,13 @@ nav a:hover {
 
 /* Main content */
 main {
-  padding: 3rem 2rem;
+  padding: 3rem 5rem;
 }
 
 /* Intro */
 .intro {
   margin-bottom: 3rem;
-  color: var(--fg-muted);
+  color: var(--fg);
   font-size: 0.95rem;
 }
 
@@ -249,7 +218,7 @@ section {
 }
 
 section + section {
-  border-top: var(--line) solid var(--border);
+  border-top: 1px solid var(--border);
   padding-top: 2.5rem;
   margin-top: 2.5rem;
 }
@@ -296,10 +265,16 @@ h2::before {
   padding-bottom: 0;
 }
 
+.blog-entry-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
 .blog-entry h3 {
   font-size: 1.05rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
 }
 
 .blog-entry h3 a {
@@ -552,6 +527,17 @@ details[open] .toc-title::after {
   text-align: center;
 }
 
+.blog-figure.float-right {
+  float: right;
+  width: 42%;
+  margin: 0 0 1.25rem 1.75rem;
+}
+
+.blog-body h2,
+.blog-body h3 {
+  clear: both;
+}
+
 .link-list {
   padding-left: 1.25rem;
   display: flex;
@@ -682,6 +668,21 @@ a.comment-ref:hover {
   width: 2rem;
   text-align: right;
   color: var(--fg-muted);
+}
+
+.algorithm-body ol li.alg-indent {
+  margin-left: 0.35rem;
+}
+
+.algorithm-body ol li.alg-highlight {
+  background: color-mix(in srgb, var(--yellow) 20%, transparent);
+  border-radius: 3px;
+}
+
+.algorithm-body .alg-require {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .algorithm-keyword {
