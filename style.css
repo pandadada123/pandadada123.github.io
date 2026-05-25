@@ -250,19 +250,11 @@ h2::before {
 
 /* Posts */
 .blog-entry {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #ccc;
-}
-
-[data-theme="dark"] .blog-entry {
-  border-bottom-color: #333;
+  margin-bottom: 0.5rem;
 }
 
 .blog-entry:last-child {
-  border-bottom: none;
   margin-bottom: 0;
-  padding-bottom: 0;
 }
 
 .blog-entry-header {

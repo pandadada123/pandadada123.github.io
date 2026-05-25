@@ -98,7 +98,7 @@
 
       <h2 id="training">Training</h2>
       <p>
-        To predict the noise added at each diffusion step, the true training objective is 
+        To predict the noise added at each diffusion step, the commonly used simplified training objective is 
         \[
           \mathcal{L} = \mathop{\mathbb{E}}\limits_{t} \ \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 } \ \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon} } 
           \left[ \| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\mathbf{x}_t, t) \|^2 \right]
@@ -145,21 +145,22 @@
             <li style="text-indent: 1.5em;">Sample a time step $\tilde{t}$ uniformly from $\{1, \ldots, T\}$</li>
             <li style="text-indent: 1.5em;">Sample a noise $\tilde{\boldsymbol{\epsilon}}$ from Gaussian distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
             <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_{\boldsymbol{\theta}} \left\| \tilde{\boldsymbol{\epsilon}} - \text{UNet}_{\boldsymbol{\theta}}\left(\sqrt{\bar{\alpha}_{\tilde{t}}}\tilde{\mathbf{x}}_0 + \sqrt{1 - \bar{\alpha}_{\tilde{t}}}\tilde{\boldsymbol{\epsilon}}, \tilde{t}\right) \right\|^2$</li>
-            <li style="text-indent: 1.5em;">Take a step towards the gradient's direction</li>
+            <li style="text-indent: 1.5em;">Take a step against the gradient's direction</li>
             <li><strong>until</strong> converged</li>
           </ol>
         </div>
       </div>
 
       <p>        
-        At each step, we know exactly the noise value $\tilde{\boldsymbol{\epsilon}}$ added to the image $\tilde{\mathbf{x}}_{\tilde{t}-1}$ at time $\tilde{t}$, either large or small. 
+        At each step, we know exactly the noise value $\tilde{\boldsymbol{\epsilon}}$ added to the image $\tilde{\mathbf{x}}_{0}$ at time $\tilde{t}$, either large or small. 
         We hope to move the UNet parameters ${\boldsymbol{\theta}}$ in the direction of predicting $\tilde{\boldsymbol{\epsilon}}$ a little bit.
         We are not making it predits exactly $\tilde{\boldsymbol{\epsilon}}$ at this step, since we just move one gradient step forward. 
       </p>
       <p>
         For example, from the previous training steps we already have a model $\text{UNet}_{{\boldsymbol{\theta}}}$ and it gives a prediction $\text{UNet}_{{\boldsymbol{\theta}}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})=0.3$.
         At this training step we know the true noise value $\tilde{\boldsymbol{\epsilon}}$ is 0.5, so we calculate the gradient and update ${\boldsymbol{\theta}}$ to make the UNet predict 0.31 instead of 0.3 at this step $\tilde{t}$.
-        Over many training iterations, it learns a function that predicts the <i>expected noise</i> added to the image $\tilde{\mathbf{x}}_{\tilde{t}-1}$ at timestep $\tilde{t}$.
+        Over many training iterations, it learns a function that predicts the <i>expected noise</i> 
+        $\text{UNet}_{\boldsymbol{\theta}^*}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}) \approx \mathbb{E}[{\boldsymbol{\epsilon}} \mid \tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t}]$ added to the image $\tilde{\mathbf{x}}_{0}$ at timestep $\tilde{t}$.
       </p>
 
       <h2 id="sampling">Sampling</h2>
@@ -258,7 +259,7 @@
         &= \log \int \textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)} \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \mathrm{d} \mathbf{x}_{1:T} \\
         &= \log \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}\left[ \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \right]  \\
         & \geq \mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \left[ \log \frac{p_\theta(\mathbf{x}_{0:T})}{\textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}} \right] := \text{ELBO}  \quad \text{; by Jensen's Inequality} \\
-        \text{equivalent to} \ & \ \quad  -\mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}  
+        \text{simplified to} \ & \ \quad  -\mathop{\mathbb{E}}\limits_{\mathbf{x}_{1:T} \sim \textcolor{grey}{p(\mathbf{x}_{1:T} \mid \mathbf{x}_0)}}  
         \left[ \sum_{t=1}^T 
         D_{\text{KL}}\Big(
         \underbrace{\textcolor{blue}{p\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t, \mathbf{x}_0\right)}}_{\textcolor{blue}{\text{known in closed Gaussian form}}} \ \Big\| \ 
@@ -318,7 +319,7 @@
         \mathop{\mathbb{E}}\limits_{t}
         \mathop{\mathbb{E}}\limits_{\mathbf{x}_0}
         \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}}
-        \left[ \sum_{t=1}^T \Bigl\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\Bigr\|^2 \right] \\
+        \Bigl[  \Bigl\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\Bigr\|^2 \Bigr] \\
         \text{with}\ \mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon},\  \text{and} \  t \sim \mathcal{U}(\{1,..., T\})
         \end{gathered}
         $$
@@ -329,7 +330,7 @@
         <a href="#ref-1" class="comment-ref">[1]</a> 
         The empirical choice of $\textcolor{Orange}{\sigma_t^2}$ was later validated by the continuous SDE formulation with diffusion coefficient $g(t)$.
         Consider the continuous time limit $\Delta t \to 0$, 
-        let $\beta(t):=\beta_t \Delta t$, with the definition of $\bar{\alpha}_t$ we have $\bar{\alpha}_t \approx e^{-\int_0^t \beta(s) d s}$.
+        let $\beta_t:=\beta(t) \Delta t$, with the definition of $\bar{\alpha}_t$ we have $\bar{\alpha}_t \approx e^{-\int_0^t \beta(s) d s}$.
         Then we can compute $\bar{\alpha}_{t-\Delta t}$ and $\tilde{\beta}_t=\beta(t) \Delta t \frac{1-\bar{\alpha}_{t-\Delta t}}{1-\bar{\alpha}_t}$.
         As $\Delta t \to 0$, we have $\textcolor{blue}{\tilde{\beta}_t} \rightarrow \beta_t$. 
         Thus, the distinction between $\textcolor{blue}{\tilde{\beta}_t}$ and $\beta_t$ is only a finite-step artifact, and both work well in practice.

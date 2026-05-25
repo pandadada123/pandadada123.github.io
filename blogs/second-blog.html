@@ -89,7 +89,7 @@
       <p>
         <ul class="link-list">
           <li>$\mathbf{f}(\cdot, t): \mathbb{R}^d \to \mathbb{R}^d$ is the <i>drift coefficient</i> of $\mathbf{x}_t \in \mathbb{R}^d$, deterministic
-            <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--Orange);">If it is linear in $\mathbf{x}_t$, it is often written as $\mathbf{f}(\mathbf{x}_t, t) = f(t)\mathbf{x}_t$ with $f(t): \mathbb{R} \to \mathbb{R}$ (usually in Variance Preserving (VP) SDEs). Same for the reverse SDE. This is an important point in score training.</div>
+            <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--Green);">If it is linear in $\mathbf{x}_t$, it is often written as $\mathbf{f}(\mathbf{x}_t, t) = f(t)\mathbf{x}_t$ with $f(t): \mathbb{R} \to \mathbb{R}$ (usually in Variance Preserving (VP) SDEs). Same for the reverse SDE. This is an important point in score training.</div>
           </li>
           <li>$g(\cdot): \mathbb{R} \to \mathbb{R}$ is the <i>diffusion coefficient</i>, deterministic, controls how much randomness is added</li>
           <li>$\{\mathbf{w}_t\}_{t=0}^T$: standard Wiener process, represents the integral of white Gaussian noise</li>
@@ -113,28 +113,28 @@
         \left[ \| \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) - \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \|^2 \right]
         \]
         We are not able to train $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ with this loss function since we don't know $p_t(\mathbf{x}_t)$ (and its score is what we want to estimate!).
-        The magic is to use a conditional trick. This loss is equivalent to,
+        The magic is to use a conditional trick. Finding the optimal $\boldsymbol{\phi}^*$ is equivalent to minimizing the following loss,
         \[
           \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
           \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
           \mathop{\mathbb{E}}\limits_{\mathbf{x}_t \sim p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
           \left[ 
           \| 
-          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) - \color{Orange}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
-          \color{black}
+          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) - \textcolor{Green}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
           \|^2 
           \right]
         \]
+        The two losses are not identical, but they give the same optimal $\boldsymbol{\phi}^*$.
       </p>
       <p>
-        When we design function $\mathbf{f}(\mathbf{x}_t, t)$ to be linear in $\mathbf{x}_t$ as $\mathbf{f}(\mathbf{x}_t, t) = f(t) \mathbf{x}_t$, we have $\textcolor{Orange}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$ to be <b>Gaussian</b> with closed form, then the objective function becomes tractable.
+        When we design function $\mathbf{f}(\mathbf{x}_t, t)$ to be linear in $\mathbf{x}_t$ as $\mathbf{f}(\mathbf{x}_t, t) = f(t) \mathbf{x}_t$, we have $\textcolor{Green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$ to be <b>Gaussian</b> with closed form, then the objective function becomes tractable.
       </p>
       <p>
-        In general, let this known <b>Gaussian</b> distribution be $\mathcal{N}(\mathbf{x}_t; \ \mu_t\mathbf{x}_0, \textcolor{Orange}{\gamma_t^2}\mathbf{I})$, functions $\mu(t)$ and $\textcolor{Orange}{\gamma(t)}$ can be derived from function $f(t)$ and $g(t)$.
+        In general, let this known <b>Gaussian</b> distribution be $\mathcal{N}(\mathbf{x}_t; \ \mu_t\mathbf{x}_0, \textcolor{Green}{\gamma_t^2}\mathbf{I})$, functions $\mu(t)$ and $\textcolor{Green}{\gamma(t)}$ can be derived from function $f(t)$ and $g(t)$.
 
-        The score function can be calculated in closed-form as $\color{Orange}{\nabla_{\mathbf{x}_t} \log p_{0t}
+        The score function can be calculated in closed-form as $\textcolor{Green}{\nabla_{\mathbf{x}_t} \log p_{0t}
         (\mathbf{x}_t | \mathbf{x}_0)}
-        \color{black}=-\frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\textcolor{Orange}{\gamma_t^2}}$.
+        =-\frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\textcolor{Green}{\gamma_t^2}}$.
         
         The training objective becomes
         $$
@@ -144,7 +144,7 @@
           \mathop{\mathbb{E}}\limits_{\mathbf{x}_t \sim p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
           \left[ 
           \left\| 
-          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) + \frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\textcolor{Orange}{\gamma_t^2}}
+          \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) + \frac{\mathbf{x}_t - \mu_t \mathbf{x}_0}{\textcolor{Green}{\gamma_t^2}}
           \right\|^2 
           \right] \\
           =
@@ -152,21 +152,23 @@
         \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
         \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}
         \left[\left\|\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)+
-        \frac{\boldsymbol{\epsilon}}{\textcolor{Orange}{\gamma_t}}
-        \right\|_2^2\right] \\
-        \text{equivalent to}\ 
-        &
-        \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
-        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
-        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}
-        \left[\left\|\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) \cdot \textcolor{Orange}{\gamma_t} +
-        \boldsymbol{\epsilon}
-        \right\|_2^2\right]
+        \frac{\boldsymbol{\epsilon}}{\textcolor{Green}{\gamma_t}}
+        \right\|_2^2\right] 
         \end{aligned}
         $$
         $$
-        \text{with}\ \mathbf{x}_t = \mu_t \mathbf{x}_0+\textcolor{Orange}{\gamma_t} \cdot\boldsymbol{\epsilon}
+        \text{with}\ \mathbf{x}_t = \mu_t \mathbf{x}_0+\textcolor{Green}{\gamma_t} \cdot\boldsymbol{\epsilon}
         $$
+        If we choose the weighting $\lambda(t) = \textcolor{Green}{\gamma_t^2}$, the training objective becomes
+        $$
+        \mathop{\mathbb{E}}\limits_{t\sim U(0,T)} \ 
+        \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p_0(\mathbf{x}_0)} \ 
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}
+        \left[\left\|\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t) \cdot \textcolor{Green}{\gamma_t} +
+        \boldsymbol{\epsilon}
+        \right\|_2^2\right]
+        $$
+        which has the same per-timestep optimum but changes the relative importance of different time steps (across noise levels). 
       </p>
       <p>
         Similar to DDPM, with SGD (stochastic gradient descent), the loss function in each iteration is,
@@ -174,7 +176,7 @@
         Then calculate the loss for this single sample, 
         \[
           \mathcal{L} = 
-          \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\textcolor{Orange}{\gamma_{\tilde{t}}} + \tilde{\boldsymbol{\epsilon}}  \right\|^2 
+          \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\textcolor{Green}{\gamma_{\tilde{t}}} + \tilde{\boldsymbol{\epsilon}}  \right\|^2 
         \]
         The UNet parameters $\boldsymbol{\phi}$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
       </p>
@@ -189,8 +191,8 @@
             <li style="text-indent: 1.5em;">Sample an image $\tilde{\mathbf{x}}_0$ from the training set $\mathcal{D}$</li>
             <li style="text-indent: 1.5em;">Sample a time step $\tilde{t}$ uniformly from $\{1, \ldots, T\}$</li>
             <li style="text-indent: 1.5em;">Sample a noise $\tilde{\boldsymbol{\epsilon}}$ from Gaussian distribution $\mathcal{N}(\mathbf{0}, \mathbf{I})$</li>
-            <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_\phi \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\textcolor{Orange}{\gamma_{\tilde{t}}} + \tilde{\boldsymbol{\epsilon}} \right\|^2$</li>
-            <li style="text-indent: 1.5em;">Take a step towards the gradient's direction</li>
+            <li style="text-indent: 1.5em;">Calculate the gradient $\nabla_\phi \left\| \mathbf{s}_{\boldsymbol{\phi}}(\tilde{\mathbf{x}}_{\tilde{t}}, \tilde{t})\cdot\textcolor{Green}{\gamma_{\tilde{t}}} + \tilde{\boldsymbol{\epsilon}} \right\|^2$</li>
+            <li style="text-indent: 1.5em;">Take a step against the gradient's direction</li>
             <li><strong>until</strong> converged</li>
           </ol>
         </div>
@@ -202,8 +204,8 @@
         <li>We need to train a network to approximate the score $\textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)}$.</li>
         <li>The training loss is derived based on the facts that
           <ul class="link-list">
-            <li>We can equivalently write the loss with $\textcolor{Orange}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
-            <li>We can analytically derive $\textcolor{Orange}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
+            <li>We can equivalently write the loss with $\textcolor{Green}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
+            <li>We can analytically derive $\textcolor{Green}{\nabla_{\mathbf{x}_t} \log p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}$</li>
           </ul>
         </li>
       </ul>
@@ -212,44 +214,42 @@
       <p>
         In DDPM we defined the discrete-time kernels 
         $$
-        p(\mathbf{x}_t | \mathbf{x}_{t-1}) 
-        =\sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+\sqrt{\beta_t} \cdot \boldsymbol{\epsilon}
-        $$
+        \mathbf{x}_t
+        := \sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+ \sqrt{\beta_t} \cdot \boldsymbol{\epsilon}        $$
         and we can derive
         $$
-        \textcolor{Orange}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
-        =\sqrt{\bar{\alpha}_t} \cdot \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \cdot \boldsymbol{\epsilon}, 
-        \quad \text{with}\ \alpha_t = 1-\beta_t, \ \bar{\alpha}_t = \prod_{s=1}^t \alpha_s
+        \textcolor{Green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
+        =\mathcal{N} \left(\mathbf{x}_t ; \sqrt{\bar{\alpha}_t}\cdot \mathbf{x}_0 , \ (1-\bar{\alpha}_t) \mathbf{I} \right)
         $$
-        In the continous-time SDE formulation, DDPM is equivalent to a VP-SDE with
+        In the continuous-time SDE formulation, DDPM is equivalent to a VP-SDE with
         $$
         \mathrm{d} \mathbf{x}_t=-\frac{1}{2} \beta(t) \mathbf{x}_t \mathrm{d} t+\sqrt{\beta(t)} \mathrm{d} \mathbf{w}_t .
         $$
         and we can derive 
         $$
-        \textcolor{Orange}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
-        = \mathcal{N}\bigl(\mathbf{x}_t; \mu(t)\mathbf{x}_0, \textcolor{Orange}{\gamma(t)^2} \mathbf{I}\bigr),
+        \textcolor{Green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)} 
+        = \mathcal{N}\bigl(\mathbf{x}_t; \mu(t)\mathbf{x}_0, \textcolor{Green}{\gamma(t)^2} \mathbf{I}\bigr),
         \quad
         \text{with}
         \
         \mu(t) = e^{-\frac{1}{2} \int_0^t \beta(s) \mathrm{d} s}, 
-        \quad \textcolor{Orange}{\gamma(t)}  = \sqrt{1-e^{-\int_0^t \beta(s) \mathrm{d} s}}
+        \quad \textcolor{Green}{\gamma(t)}  = \sqrt{1-e^{-\int_0^t \beta(s) \mathrm{d} s}}
         $$
         The discrete and continuous formulations are consistent through
         $$
         \sqrt{\bar{\alpha}_t} \approx \mu(t), \quad \sqrt{1-\bar{\alpha}_t} \approx \gamma(t)
         $$
-        This follows from the relations $\alpha(t) = 1-\beta(t)$, $\bar{\alpha}(t) = \prod_{s=1}^t \alpha(s)$, and $\log \left(1-\beta_s\right) \approx-\beta_s$ when $\beta_s$ is small.<br>
+        This follows from the $\log \left(1-\beta_s\right) \approx-\beta_s$ when $\beta_s$ is small.<br>
       </p>
       <p>
         Compare the training loss with DDPM we can observe that, 
         <b>a score predictor and a noise predictor are equivalent</b>, only with a difference in a scaling factor as
         $$
         \textcolor{red}{\mathbf{s}_{\phi^*}(\mathbf{x}_t, t)} = 
-        \textcolor{Orange}{-\frac{1}{\sqrt{1-\bar{\alpha}_t}}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right) 
-        = \textcolor{Orange}{- \frac{1}{\gamma_t}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right)
+        \textcolor{Green}{-\frac{1}{\sqrt{1-\bar{\alpha}_t}}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right) 
+        = \textcolor{Green}{- \frac{1}{\gamma_t}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right)
         $$
-        Therefore the choice of predictors is not a fundamental modeling difference but only a implementation difference and can be used interchangeably. <br>
+        Therefore the choice of predictors is not a fundamental modeling difference but only a implementation difference and can be used (mostly) interchangeably. <br>
         Taking into account of the scaling factor, the above training loss for score predictor is equivalent to the training loss for noise predictor in DDPM.
       </p>
       
@@ -281,11 +281,10 @@
                   g(t)\sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t
                   }_{\color{NavyBlue}\text{randomness}}
                 $$</li>
-            <li>This discretization step is a tractable approximation of the true posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t})$ with $\Delta t &lt; 0$.
+            <li>This discretization step is a tractable approximation of the posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t})$ with $\Delta t &lt; 0$.
               The process is equivalent to <b>sampling</b> from this distribution, which is Gaussian $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t})
-                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\color{red}\text{mean}
-                \color{black},
-                g(t)^2 |\Delta t| )$.</li>
+                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\textcolor{red}{\text{mean}},\ 
+                g(t)^2 |\Delta t| \mathbf{I})$.</li>
           </ol>
         </div>
       </div>
@@ -365,18 +364,16 @@
                   \mathbf{x}_t + \left[\mathbf{f}(\mathbf{x}_t, t) - g(t)^2 \left[\color{red}\mathbf{s}_{\boldsymbol{\phi}^*}(\mathbf{x}_t, t)
                   \color{magenta}
                   + \nabla_{\mathbf{x}_t} \log p_t(\mathbf{y} \mid \mathbf{x}_t)
-                  \color{black}
                   \right]\right] \Delta t }_{\color{magenta}\text{mean}}
                   +
                   \underbrace{
                   g(t)\sqrt{|\Delta t|} \cdot \boldsymbol{\epsilon}_t
                   }_{\color{NavyBlue}\text{randomness}}
                 $$</li>
-            <li>This discretization step is a tractable approximation of the true posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \color{magenta}\mathbf{y}\color{black})$ with $\Delta t &lt; 0$.
-              The process is equivalent to <b>sampling</b> from this distribution, which is Gaussian $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \color{magenta}\mathbf{y}\color{black})
-                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\color{magenta}\text{mean}
-                \color{black},
-                g(t)^2 |\Delta t| )$.</li>
+            <li>This discretization step is a tractable approximation of the posterior $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \textcolor{magenta}{\mathbf{y}})$ with $\Delta t &lt; 0$.
+              The process is equivalent to <b>sampling</b> from this distribution, which is Gaussian $p(\mathbf{x}_{t+\Delta t} \mid \mathbf{x}_{t}, \textcolor{magenta}{\mathbf{y}})
+                =\mathcal{N}( \mathbf{x}_{t+\Delta t}\ ;\textcolor{magenta}{\text{mean}},\ 
+                g(t)^2 |\Delta t| \mathbf{I})$.</li>
           </ol>
         </div>
       </div>
@@ -385,7 +382,7 @@
       <h3 id="estimation-of-likelihood-score">Estimation of $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$</h3>
       <p>
         The above sampling already assumes that we are able to estimate $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$. 
-        There various methods trying to approximate $p(\mathbf{y} \mid \mathbf{x}_t)$.
+        There are various methods trying to approximate $p(\mathbf{y} \mid \mathbf{x}_t)$.
         One standardized method is DPS by <a href="https://arxiv.org/abs/2209.14687" target="_blank" class="cite">[Chung et al. 2022]</a>.
       </p>
       <p>
@@ -421,9 +418,9 @@
         $$
         \begin{aligned}
         \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) :=\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
-        & \simeq \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Orange}{+(1-\bar{\alpha}_t)} \textcolor{red}{\mathbf{s}_{\boldsymbol{\phi}}^* (\mathbf{x}_t, t)}\right) \\
-        & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Orange}{-\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)\\
-        & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Orange}{-\gamma_t} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)
+        & \simeq \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Green}{+(1-\bar{\alpha}_t)} \textcolor{red}{\mathbf{s}_{\boldsymbol{\phi}}^* (\mathbf{x}_t, t)}\right) \\
+        & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Green}{-\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)\\
+        & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Green}{-\gamma_t} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)
         \end{aligned}
         $$
       </p>
@@ -431,18 +428,18 @@
       <h3 id="dps-algorithm">Overall DPS Algorithm</h3>
       <div class="algorithm">
         <div class="algorithm-header">
-          <strong>Algorithm 5</strong> DPS (Score-Prediction Form)
+          <strong>Algorithm 4</strong> DPS (Score-Prediction Form)
         </div>
         <div class="algorithm-body">
-          <div class="alg-require"><strong>Require:</strong> \(T,\; \mathbf{y},\; \{\zeta_t\}_{t=1}^T,\; \{\gamma_t\}_{t=1}^T\)</div>
+          <div class="alg-require"><strong>Require:</strong> \(T,\; \mathbf{y},\; \{\zeta_t\}_{t=1}^T,\; \{\textcolor{Orange}{\sigma_t}\}_{t=1}^T\)</div>
           <ol>
             <li>\(\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\)</li>
             <li><strong>for</strong> \(t = T\) <strong>to</strong> \(1\) <strong>do</strong></li>
             <li class="alg-indent">\(\hat{\mathbf{s}} \leftarrow s_{\phi^*}(\mathbf{x}_t, t)\)</li>
-            <li class="alg-indent alg-highlight">\(\hat{\mathbf{x}}_0 \leftarrow \dfrac{1}{\sqrt{\bar{\alpha}_t}} \left( \mathbf{x}_t \textcolor{Orange}{+(1-\bar{\alpha}_t)}\, \hat{\mathbf{s}} \right)\)</li>
+            <li class="alg-indent alg-highlight">\(\hat{\mathbf{x}}_0 \leftarrow \dfrac{1}{\sqrt{\bar{\alpha}_t}} \left( \mathbf{x}_t \textcolor{Green}{+(1-\bar{\alpha}_t)}\, \hat{\mathbf{s}} \right)\)</li>
             <li class="alg-indent">\(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\)</li>
-            <li class="alg-indent">\(\mathbf{x}_{t-1} \leftarrow \dfrac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \dfrac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \gamma_t \mathbf{z}\)</li>
-            <li class="alg-indent alg-highlight">\(\mathbf{x}_{t-1} \leftarrow \mathbf{x}_{t-1} - \zeta_t \nabla_{\mathbf{x}_t} \left\| \mathbf{y} - \mathcal{A}(\hat{\mathbf{x}}_0) \right\|_2\)</li>
+            <li class="alg-indent">\(\mathbf{x}_{t-1} \leftarrow \dfrac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \dfrac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \textcolor{Orange}{\sigma_t} \mathbf{z}\)</li>
+            <li class="alg-indent alg-highlight">\(\mathbf{x}_{t-1} \leftarrow \mathbf{x}_{t-1} - \zeta_t \nabla_{\mathbf{x}_t} \left\| \mathbf{y} - \mathcal{A}(\hat{\mathbf{x}}_0) \right\|_2^2\)</li>
             <li class="alg-indent"><strong>end for</strong></li>
             <li><strong>return</strong> \(\hat{\mathbf{x}}_0\)</li>
           </ol>
@@ -451,18 +448,18 @@
 
       <div class="algorithm">
         <div class="algorithm-header">
-          <strong>Algorithm 4</strong> DPS (Noise-Prediction Form)
+          <strong>Algorithm 5</strong> DPS (Noise-Prediction Form)
         </div>
         <div class="algorithm-body">
-          <div class="alg-require"><strong>Require:</strong> \(T,\; \mathbf{y},\; \{\zeta_t\}_{t=1}^T,\; \{\gamma_t\}_{t=1}^T\)</div>
+          <div class="alg-require"><strong>Require:</strong> \(T,\; \mathbf{y},\; \{\zeta_t\}_{t=1}^T,\; \{\textcolor{Orange}{\sigma_t}\}_{t=1}^T\)</div>
           <ol>
             <li>\(\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\)</li>
             <li><strong>for</strong> \(t = T\) <strong>to</strong> \(1\) <strong>do</strong></li>
             <li class="alg-indent">\(\hat{\boldsymbol{\epsilon}} \leftarrow \epsilon_{\theta^*}(\mathbf{x}_t, t)\)</li>
-            <li class="alg-indent alg-highlight">\(\hat{\mathbf{x}}_0 \leftarrow \dfrac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t \textcolor{Orange}{- \sqrt{1-\bar{\alpha}_t}}\,\hat{\boldsymbol{\epsilon}}\right)\)</li>
+            <li class="alg-indent alg-highlight">\(\hat{\mathbf{x}}_0 \leftarrow \dfrac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t \textcolor{Green}{- \sqrt{1-\bar{\alpha}_t}}\,\hat{\boldsymbol{\epsilon}}\right)\)</li>
             <li class="alg-indent">\(\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\)</li>
-            <li class="alg-indent" style="white-space: nowrap;">\(\mathbf{x}_{t-1} \leftarrow \tfrac{1}{\sqrt{\alpha_t}} \left( \mathbf{x}_t - \tfrac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\hat{\boldsymbol{\epsilon}} \right) + \gamma_t \mathbf{z}\) &ensp;<strong>OR</strong>&ensp; \(\mathbf{x}_{t-1} \leftarrow \tfrac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \tfrac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \gamma_t \mathbf{z}\)</li>
-            <li class="alg-indent alg-highlight">\(\mathbf{x}_{t-1} \leftarrow \mathbf{x}_{t-1} - \zeta_t \nabla_{\mathbf{x}_t} \left\| \mathbf{y} - \mathcal{A}(\hat{\mathbf{x}}_0) \right\|_2\)</li>
+            <li class="alg-indent" style="white-space: nowrap;">\(\mathbf{x}_{t-1} \leftarrow \tfrac{1}{\sqrt{\alpha_t}} \left( \mathbf{x}_t - \tfrac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\hat{\boldsymbol{\epsilon}} \right) + \textcolor{Orange}{\sigma_t} \mathbf{z}\) &ensp;<strong>OR</strong>&ensp; \(\mathbf{x}_{t-1} \leftarrow \tfrac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \tfrac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \textcolor{Orange}{\sigma_t} \mathbf{z}\)</li>
+            <li class="alg-indent alg-highlight">\(\mathbf{x}_{t-1} \leftarrow \mathbf{x}_{t-1} - \zeta_t \nabla_{\mathbf{x}_t} \left\| \mathbf{y} - \mathcal{A}(\hat{\mathbf{x}}_0) \right\|_2^2\)</li>
             <li class="alg-indent"><strong>end for</strong></li>
             <li><strong>return</strong> \(\hat{\mathbf{x}}_0\)</li>
           </ol>
@@ -471,13 +468,15 @@
 
       <p>
         The two algorithms are equivalent, with the only difference of using a noise-predictor or a score-predictor.<br>
-        In Algorithm with noise-prediction form, in line 6, the two updates are equivaltent, and can be valified by substituting the $\hat{\mathbf{x}}_0$ in line 4 into the update in line 6.
+        In the noise-prediction form, in line 6, the two updates are equivalent, and can be verified by substituting the $\hat{\mathbf{x}}_0$ in line 4 into the update in line 6.
       </p>
       <p>
-        <span style="background: color-mix(in srgb, var(--yellow) 20%, transparent); border-radius: 3px; padding: 0.1em 0.3em;">Line 4 and 7 are used for inverse problem solving, the rests are identical to uncondtional sampling DDPM.</span>
+        <span style="background: color-mix(in srgb, var(--yellow) 20%, transparent); border-radius: 3px; padding: 0.1em 0.3em;">In the noise-prediction form, line 4 and 7 are used for inverse problem solving, the rest are identical to unconditional sampling DDPM.</span>
       </p>
       <p>
-        P.S. The original implementation of DPS is using noise-predictor with update $\mathbf{x}_{t-1} \leftarrow \frac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \gamma_t \mathbf{z}$ 
+        P.S. The <a href="https://github.com/DPS2022/diffusion-posterior-sampling/tree/main" target="_blank" class="cite">original implementation</a> of DPS
+         is using noise-predictor with update $\mathbf{x}_{t-1} \leftarrow \frac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \textcolor{Orange}{\sigma_t} \mathbf{z}$ 
+        
       </p>
     </div>
   </article>

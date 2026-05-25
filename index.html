@@ -36,7 +36,7 @@
       </div>
       <nav>
         <a href="#blogs">Blogs</a>
-        <a href="#resources">Resources</a>
+        <a href="#resources">Works</a>
         <a href="#misc">Misc.</a>
         <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">&#9680;</button>
       </nav>
@@ -47,9 +47,12 @@
     <main>
       <section class="intro">
         <p> Hi, this is Wenxin (Wen-Xin)! </p>
-        <p> I love complex systems with geometric structures, both engineered and natural, and symphony. </p>
         <p> On this page you can find my blogs, resources around my previous works, and more. </p>
         <p> Drop me a message at pandadadawx(at)gmail(dot)com </p>
+        <p style="margin-top: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--fg-muted); color: var(--fg-muted); line-height: 2;">
+        I am fascinated by the hidden geometries of complex systems<br>
+        — whether engineered, natural, visual, or symphonic<br>
+        — where order, function, and beauty interact, balance, and emerge.</p>
       </section>
 
       <section id="blogs">
@@ -58,20 +61,20 @@
         <article class="blog-entry">
           <div class="blog-entry-header">
             <h3><a href="blogs/first-blog.html">Diffusion Models - DDPM</a></h3>
-            <div class="meta">Last updated May 22, 2026 &middot; 9 min read &middot; Wenxin Pan</div>
+            <div class="meta"><span class="last-updated" data-blog="blogs/first-blog.html">Last updated May 22, 2026</span> &middot; 9 min read &middot; Wenxin Pan</div>
           </div>
         </article>
 
         <article class="blog-entry">
           <div class="blog-entry-header">
             <h3><a href="blogs/second-blog.html">Score-based Diffusion Models</a></h3>
-            <div class="meta">Last updated May 22, 2026 &middot; 11 min read &middot; Wenxin Pan</div>
+            <div class="meta"><span class="last-updated" data-blog="blogs/second-blog.html">Last updated May 22, 2026</span> &middot; 11 min read &middot; Wenxin Pan</div>
           </div>
         </article>
       </section>
 
       <section id="resources">
-        <h2>Resources</h2>
+        <h2>Works</h2>
         <ul class="resource-list">
           <li>
             <span class="resource-title">Max-Min Sliced Gromov-Wasserstein</span>
@@ -122,6 +125,20 @@
       <p>&copy; 2026 Wenxin Pan</p>
     </div>
   </footer>
+
+  <script>
+    document.querySelectorAll('.last-updated[data-blog]').forEach(async (el) => {
+      try {
+        const res = await fetch(el.dataset.blog, { method: 'HEAD' });
+        const lm = res.headers.get('Last-Modified');
+        if (lm) {
+          const d = new Date(lm);
+          const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          el.textContent = 'Last updated ' + label;
+        }
+      } catch (e) {}
+    });
+  </script>
 
   <script>
     (function () {
