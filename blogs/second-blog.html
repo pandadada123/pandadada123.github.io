@@ -476,7 +476,10 @@
       <p>
         P.S. The <a href="https://github.com/DPS2022/diffusion-posterior-sampling/tree/main" target="_blank" class="cite">original implementation</a> of DPS
          is using noise-predictor with update $\mathbf{x}_{t-1} \leftarrow \frac{\sqrt{\alpha_t}\,(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\,\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\,\beta_t}{1-\bar{\alpha}_t}\,\hat{\mathbf{x}}_0 + \textcolor{Orange}{\sigma_t} \mathbf{z}$ 
-        
+      </p>
+      <p>
+        In the final step (line 9) we can return $\hat{\mathbf{x}}_0$ or $\mathbf{x}_0$. When $t=1$, $\bar{\alpha}_0=1$, 
+        then the posterior mean (reverse mean) is exactly $\boldsymbol{\mu}_{\boldsymbol{\theta}^*}(\mathbf{x}_1,1)=\hat{\mathbf{x}}_0(\mathbf{x}_1)$.
       </p>
     </div>
   </article>
