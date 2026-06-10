@@ -647,7 +647,7 @@ a.comment-ref:hover {
 .algorithm-body ol li {
   counter-increment: line-counter;
   position: relative;
-  padding-left: 3rem;
+  padding-left: 3.25rem;
   margin-bottom: 0.3rem;
   font-size: 1rem;
   line-height: 1.6;
@@ -656,14 +656,15 @@ a.comment-ref:hover {
 .algorithm-body ol li::before {
   content: counter(line-counter) ":";
   position: absolute;
-  left: 0.5rem;
-  width: 2rem;
+  left: 0;
+  width: 2.25rem;
   text-align: right;
   color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .algorithm-body ol li.alg-indent {
-  margin-left: 0.35rem;
+  padding-left: 4.75rem;
 }
 
 .algorithm-body ol li.alg-highlight {
