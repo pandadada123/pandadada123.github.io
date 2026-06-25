@@ -85,8 +85,8 @@
       <p>
       <ul style="padding-left: 2em;">
         <li>$\boldsymbol{X}_t$, $\boldsymbol{\mathcal{E}}$, $T$  — random variables </li>
-        <li>$\boldsymbol{x}_t$, $\boldsymbol{\epsilon}$, $t$  — realizations or samples</li> 
-        <li>$p(\boldsymbol{x}_t) $  — density function of $\boldsymbol{X}_t$, more explicitly $p_{\boldsymbol{X}_t}(\boldsymbol{x}_t)$ </li>
+        <li>$\boldsymbol{x}_t$, $\boldsymbol{\epsilon}$, $t$  — realizations or samples, accordingly</li> 
+        <li>$p(\boldsymbol{x}_t) $  — probability density function of $\boldsymbol{X}_t$, more explicitly $p_{\boldsymbol{X}_t}(\boldsymbol{x}_t)$ </li>
         <li>$L$ — constant, the number of total diffusion steps</li>
       </ul>
       </p>
@@ -114,6 +114,7 @@
         $$
 
       <h2 id="training">Training</h2>
+      <h3 id="training-objective">Training objective</h3>
       <p>
         To predict the noise used in the closed-form construction of the noisy sample $\boldsymbol{x}_t$, the commonly used simplified training objective is 
         \[
@@ -164,9 +165,9 @@
         <div class="algorithm-body">
           <ol>
             <li><strong>repeat</strong></li>
-            <li class="alg-indent">Sample an image $\boldsymbol{x}_0$ from the training set $\mathcal{D}$</li>
-            <li class="alg-indent">Sample a time step $t$ uniformly from $\{1, \ldots, L\}$</li>
-            <li class="alg-indent">Sample a noise realization $\boldsymbol{\epsilon}$ from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
+            <li class="alg-indent"><b>Sample</b> an image $\boldsymbol{x}_0$ from the training set $\mathcal{D}$</li>
+            <li class="alg-indent"><b>Sample</b> a time step $t$ uniformly from $\{1, \ldots, L\}$</li>
+            <li class="alg-indent"><b>Sample</b> a noise realization $\boldsymbol{\epsilon}$ from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
             <li class="alg-indent">Construct $\boldsymbol{x}_t=\sqrt{\bar{\alpha}_t}\boldsymbol{x}_0+\sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}$</li>
             <li class="alg-indent">Calculate the gradient $\nabla_{\boldsymbol{\theta}} \left\| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}\left(\boldsymbol{x}_t, t\right) \right\|^2$</li>
             <li class="alg-indent">Take a step against the gradient's direction</li>
@@ -175,6 +176,7 @@
         </div>
       </div>
 
+      <h3 id="intuition">Intuition of training steps</h3>
       <p>        
         At each training step, after drawing $(t, \boldsymbol{x}_0, \boldsymbol{\epsilon})$, 
         we know exactly the noise realization $\boldsymbol{\epsilon}$ used to construct the noisy image $\boldsymbol{x}_t$,
@@ -192,6 +194,8 @@
       <h2 id="sampling">Sampling</h2>
       <p>
         After training, we have the <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}$</span> to predict the noise added at each step. We can use it to generate new images. We start from a pure noise image and iteratively denoise it.
+      </p>
+      <p>
         This generation process is also called sampling, since at each step we are essentially sampling from a posterior distribution $p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)$ conditioned on the current realization $\boldsymbol{x}_t$.
       </p>
 
@@ -201,28 +205,32 @@
         </div>
         <div class="algorithm-body">
           <ol>
-            <li><span class="algorithm-keyword">First,</span> <b>sample</b> initial noise image $\boldsymbol{x}_L$ from the prior distribution $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
-            <li><span class="algorithm-keyword">Second,</span> for $t=L,L-1,\ldots,1$, let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$</span>; <br>
-              then calculate the posterior mean
-              $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
-              =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} 
-              \textcolor[RGB]{0,61,165}{\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)}\right)},
-              $$ 
-              which fully describes the estimated posterior Gaussian distribution
-              $$
-              \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t 
-              = \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; 
-              \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t), \sigma_t^2\boldsymbol{I}\Bigr) }
-              $$
+            <li><b>Sample</b> initial noise image $\boldsymbol{x}_L$ from the prior distribution $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
+            <li><b>For</b> $t=L,L-1,\ldots,1$ <b>do</b>
+              <div class="alg-loop-body">
+                Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$</span>; <br>
+                then calculate the posterior mean
+                $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
+                =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} 
+                \textcolor[RGB]{0,61,165}{\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)}\right)},
+                $$ 
+                which fully describes the estimated posterior Gaussian distribution
+                $$
+                \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t 
+                = \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; 
+                \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t), \sigma_t^2\boldsymbol{I}\Bigr) }
+                $$
+                Then <b>sample</b> the next realization from this posterior $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$. <br>
+                Since this posterior is Gaussian, this process is equivalent to computing<br>
+                $\qquad \boldsymbol{x}_{t-1} 
+                = \textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)} + \textcolor{Orange}{\sigma_t} \boldsymbol{z}$, 
+                where $\boldsymbol{z}$ is a realization from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$, <br>
+                and the posterior std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ <br>
+                (see more in the next section).<br>
+                <em>Conceptually is "mean + randomness"</em>
+              </div>
             </li>
-            <li><span class="algorithm-keyword">Third,</span> <b>sample</b> the next realization from this posterior $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$. <br>
-              Since this posterior is Gaussian, this process is equivalent to computing<br>
-              $\qquad \boldsymbol{x}_{t-1} 
-              = \textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)} + \textcolor{Orange}{\sigma_t} \boldsymbol{z}$, 
-              where $\boldsymbol{z}$ is a realization from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$, <br>
-              and the posterior std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ (see more in the next section).<br>
-              <em>Conceptually is "mean + randomness"</em></li>
-            <li><span class="algorithm-keyword">Repeat</span> until $t=1$ to get the final generated image $\boldsymbol{x}_0$.</li>
+            <li><b>Repeat</b> until $t=1$ to get the final generated image $\boldsymbol{x}_0$.</li>
           </ol>
         </div>
       </div>
@@ -319,19 +327,19 @@
         \Bigg[
         \sum_{t=1}^L
         D_{\text{KL}}\Big(
-        q(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0)
-        \ \big\|\ p_\theta(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t)
+        q\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0\right)
+        \ \big\|\ p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right)
         \Big) \\
         &\qquad\qquad
         +D_{\text{KL}}\Big(
-        q(\boldsymbol{x}_L \mid \boldsymbol{x}_0)
-        \ \big\|\ p(\boldsymbol{x}_L)
+        q\left(\boldsymbol{x}_L \mid \boldsymbol{x}_0\right)
+        \ \big\|\ p\left(\boldsymbol{x}_L\right)
         \Big) 
-        - \log p_\theta(\boldsymbol{x}_0 \mid \boldsymbol{x}_1)
+        - \log p_\theta\left(\boldsymbol{x}_0 \mid \boldsymbol{x}_1\right)
         \Bigg] 
         \end{aligned}
         $$
-        Ignore the constant and boundary terms (in the second line) gives
+        Ignoring the constant and boundary terms in the second line gives
         $$
         -\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}}  
         \left[ \sum_{t=1}^L 

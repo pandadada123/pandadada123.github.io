@@ -387,20 +387,20 @@
       </div>
 
 
-      <h3 id="estimation-of-likelihood-score">Estimation of $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$</h3>
+      <h3 id="estimation-of-likelihood-score">Estimation of $\textcolor{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$</h3>
       <p>
-        The above sampling already assumes that we are able to estimate $\color{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$. 
-        There are various methods trying to approximate $p(\mathbf{y} \mid \mathbf{x}_t)$.
+        The above sampling already assumes that we have the access to $\textcolor{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}$. 
+        There are various methods to approximate $p(\mathbf{y} \mid \mathbf{x}_t)$.
         One standardized method is DPS by <a href="https://arxiv.org/abs/2209.14687" target="_blank" class="cite">[Chung et al. 2022]</a>.
       </p>
       <p>
-        Compute and approximate $p(\mathbf{y} \mid \mathbf{x}_t)$:
+        <b>Step 1: </b>To approximate $p(\mathbf{y} \mid \mathbf{x}_t)$ in order to use the known $p(\mathbf{y} \mid \mathbf{x}_0)$.
         $$
         \begin{aligned}
-        p(\mathbf{y} \mid \mathbf{x}_t) 
-        & =\int p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t) \cdot p(\mathbf{x}_0 \mid \mathbf{x}_t) \mathrm{d} \mathbf{x}_0 \\
-        & =\int p(\mathbf{y} \mid \mathbf{x}_0) \cdot p(\mathbf{x}_0 \mid \mathbf{x}_t) \mathrm{d} \mathbf{x}_0 \\
-        & =\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[p(\mathbf{y} \mid \mathbf{x}_0)] \\[-4pt]
+        p\left(\mathbf{y} \mid \mathbf{x}_t\right) 
+        & =\int \underbrace{p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t)}_{\large = p(\mathbf{y} \mid \mathbf{x}_0)\ \text{with}\  \mathbf{y} \perp\!\!\!\perp \mathbf{x}_t \mid \mathbf{x}_0}
+        \cdot \ p(\mathbf{x}_0 \mid \mathbf{x}_t) \ \mathrm{d} \mathbf{x}_0 \\[10pt]
+        & =\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}\left[p(\mathbf{y} \mid \mathbf{x}_0)\right] \\[-4pt]
         & \hspace{14em} \Big\downarrow \ \text{key approximation} \\[-4pt]
         & \simeq  p(\mathbf{y} \mid \textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}) \\
         & \textcolor{blue}{:=} p(\mathbf{y} \mid \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)})
@@ -413,6 +413,9 @@
         </p>
         <p>
         We denote this posterior mean as $\textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)}$ and treat it as our estimate of the clean image given the current noisy state $\mathbf{x}_t$.
+        </p>
+        <p>
+          <b>Step 2: </b>To estimate $\textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)}$ using score-predictor or noise-predictor.
         </p>
         <p>
         The Tweedie's formula theoretically gives
@@ -430,6 +433,16 @@
         & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Green}{-\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)\\
         & = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t\textcolor{Green}{-\gamma_t} \boldsymbol{\epsilon}_{\theta^*}\left(\mathbf{x}_t, t\right)\right)
         \end{aligned}
+        $$
+      </p>
+
+      <p>
+        <b>Given the above,</b> when $p(\mathbf{y} \mid \mathbf{x}_0)$ is <b>Gaussian</b>, we have
+        $$
+        \textcolor{magenta}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)} 
+        \simeq 
+        {\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)} \right)}
+        \simeq -\frac{1}{\sigma^2} \nabla_{\mathbf{x}_t}\left\|\mathbf{y}-\mathcal{A}\left(\textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t)}\right)\right\|_2^2
         $$
       </p>
 
