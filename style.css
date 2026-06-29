@@ -92,28 +92,6 @@ header {
   gap: 1rem;
 }
 
-.header-social-links {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.social-link-icon {
-  display: inline-flex;
-  color: var(--fg-muted);
-  transition: color 0.15s;
-  text-decoration: none;
-}
-
-.social-link-icon:hover {
-  color: var(--fg);
-}
-
-.social-link-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
 .site-name {
   font-size: 1.1rem;
   font-weight: 600;
@@ -203,6 +181,26 @@ nav a:hover {
 /* Main content */
 main {
   padding: 3rem 5rem;
+}
+
+.profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.profile-links a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.profile-links a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
 }
 
 /* Intro */
