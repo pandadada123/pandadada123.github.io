@@ -65,11 +65,9 @@
       <h2 id="useful-links">Useful links</h2>
       <ul class="link-list">
         <li><a href="https://arxiv.org/abs/2006.11239" target="_blank">Denoising Diffusion Probabilistic Models - by Jonathan Ho et al</a></li>
-        <li><a href="https://arxiv.org/abs/2011.13456" target="_blank">Score-Based Generative Modeling through Stochastic Differential Equations - by Yang Song et al</a></li>
         <li><a href="https://arxiv.org/abs/2510.21890" target="_blank">The Principles of Diffusion Models - by Chieh-Hsin Lai et al</a></li>
         <li><a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank">What are Diffusion Models? - by Lilian Weng</a></li>
-        <li><a href="https://yang-song.net/blog/2021/score/" target="_blank">Generative Modeling by Estimating Gradients of the Data Distribution - by Yang Song</a></li>
-        <li><a href="https://www.youtube.com/watch?v=lUljxdkolK8&t=928s" target="_blank">Score-based Diffusion Models | Generative AI Animated - by Deepia</a></li>
+        <li><a href="https://www.youtube.com/watch?v=EhndHhIvWWw&t=1258s" target="_blank">Diffusion Models: DDPM | Generative AI Animated - by Deepia</a></li>
       </ul>
 
       <h2 id="introduction">Introduction</h2>
@@ -196,12 +194,12 @@
         After training, we have the <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}$</span> to predict the noise added at each step. We can use it to generate new images. We start from a pure noise image and iteratively denoise it.
       </p>
       <p>
-        This generation process is also called sampling, since at each step we are essentially sampling from a posterior distribution $p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)$ conditioned on the current realization $\boldsymbol{x}_t$.
+        This generation process is also called sampling, since at each step we are essentially sampling from the reverse diffusion distribution $p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)$ conditioned on the current realization $\boldsymbol{x}_t$.
       </p>
 
       <div class="algorithm">
         <div class="algorithm-header">
-          <strong>Algorithm 2</strong> Posterior sampling 
+          <strong>Algorithm 2</strong> Reverse diffusion sampling 
         </div>
         <div class="algorithm-body">
           <ol>
@@ -209,23 +207,23 @@
             <li><b>For</b> $t=L,L-1,\ldots,1$ <b>do</b>
               <div class="alg-loop-body">
                 Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$</span>; <br>
-                then calculate the posterior mean
+                then calculate the reverse mean
                 $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
                 =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} 
                 \textcolor[RGB]{0,61,165}{\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)}\right)},
                 $$ 
-                which fully describes the estimated posterior Gaussian distribution
+                which fully describes the estimated reverse Gaussian distribution
                 $$
                 \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t 
                 = \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; 
                 \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t), \sigma_t^2\boldsymbol{I}\Bigr) }
                 $$
-                Then <b>sample</b> the next realization from this posterior $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$. <br>
-                Since this posterior is Gaussian, this process is equivalent to computing<br>
+                Then <b>sample</b> the next realization from this reverse distribution $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$. <br>
+                Since this reverse distribution is Gaussian, this process is equivalent to computing<br>
                 $\qquad \boldsymbol{x}_{t-1} 
                 = \textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)} + \textcolor{Orange}{\sigma_t} \boldsymbol{z}$, 
                 where $\boldsymbol{z}$ is a realization from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$, <br>
-                and the posterior std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ <br>
+                and the reverse std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ <br>
                 (see more in the next section).<br>
                 <em>Conceptually is "mean + randomness"</em>
               </div>
@@ -251,13 +249,13 @@
         <li>$q(\boldsymbol{x}_t \mid \boldsymbol{x}_{t-1})$ — forward diffusion kernel (noise-adding)</li>
         <li>$p_\theta(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t)$ — reverse denoising distribution (parameterised by $\theta$)</li>
         <li>$\boldsymbol{\mu}_\theta, \boldsymbol{\Sigma}_\theta$ — predicted mean and covariance of the reverse process</li>
-        <li>$\tilde{\mu}_t, \tilde{\beta}_t$ — posterior mean and variance of $q(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0)$</li> -->
+        <li>$\tilde{\mu}_t, \tilde{\beta}_t$ — reverse mean and variance of $q(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0)$</li> -->
 
         <li>$\beta_t$ — forward variance </li>
-        <li>$\textcolor{blue}{\tilde{\beta}_t}$ — posterior variance, additionally conditioned on clean data $\boldsymbol{x}_0$</li> 
-        <li>$\textcolor{Orange}{\sigma_t^2}$ — posterior variance </li>
-        <li>$\textcolor{blue}{\tilde{\mu}_t}$ — posterior mean, additionally conditioned on clean data $\boldsymbol{x}_0$</li>
-        <li>$\textcolor{Orange}{\boldsymbol{\mu}_\theta}$ — posterior mean, to be predicted</li>
+        <li>$\textcolor{blue}{\tilde{\beta}_t}$ — reverse variance, additionally conditioned on clean data $\boldsymbol{x}_0$</li> 
+        <li>$\textcolor{Orange}{\sigma_t^2}$ — reverse variance </li>
+        <li>$\textcolor{blue}{\tilde{\mu}_t}$ — reverse mean, additionally conditioned on clean data $\boldsymbol{x}_0$</li>
+        <li>$\textcolor{Orange}{\boldsymbol{\mu}_\theta}$ — reverse mean, to be predicted</li>
       </ul>
       </p>
       <h3>Forward process (repeat)</h3>
@@ -284,7 +282,7 @@
         The common goal of generative modeling is to choose model parameters $\boldsymbol{\theta}$ that make the observed training samples likely.
         Given a dataset $\mathcal{D}=\{\boldsymbol{x}_0^{(1)}, \boldsymbol{x}_0^{(2)}, \ldots, \boldsymbol{x}_0^{(n)}\}$, 
         each $\boldsymbol{x}_0^{(i)}$ is a realization of an iid random variable 
-        $\boldsymbol{X}_0^{(i)} \sim p_{data}:=q(\boldsymbol{x}_0) $.
+        $\textcolor{red}{\boldsymbol{X}_0^{(i)} \sim p_{data}:=q(\boldsymbol{x}_0)} $.
         We want to have a model $p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0) \approx p_{data}$.
         Maximum likelihood estimation writes
         $$
@@ -314,15 +312,21 @@
         Training objective with ELBO (evidence lower bound)
       </p>
       <p>
-        We aim to maximize $ \textcolor{red}{\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0 \sim p_{\text{data}}} \left[\log p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0)\right]} $ for an observed sample $\boldsymbol{x}_0$, but it is intractable, so we maximize ELBO. <br>
-        Let $\boldsymbol{x}_{0:L} := \boldsymbol{x}_0, \boldsymbol{x}_1, ..., \boldsymbol{x}_L$. 
-        $$
+        We aim to <b>maximize</b> $ \textcolor{red}{\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0 \sim p_{\text{data}}} \left[\log p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0)\right]} $,
+        but it is intractable, so we maximize ELBO. <br>
+        Let $\boldsymbol{X}_{0:L} := \boldsymbol{X}_0, \boldsymbol{X}_1, ..., \boldsymbol{X}_L$. <br>
+        Let latents $\boldsymbol{Z} := \boldsymbol{X}_{1:L} := \boldsymbol{X}_1, ..., \boldsymbol{X}_L$. <br>
+        <br>
+        <!-- $$
         \begin{aligned}
-        &\ \quad \log p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0) \quad \text{; which is the so-called evidence}\\
-        &= \log \int p_\theta(\boldsymbol{x}_{0:L}) \mathrm{d} \boldsymbol{x}_{1:L} \\
+        &\ \quad \log p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0) 
+        \quad \text{; which is the so-called "evidence"}\\
+        &= \log \int p_\theta(\boldsymbol{x}_{0:L}) \mathrm{d} \boldsymbol{x}_{1:L} 
+        \quad \text{; Expand $p_\theta(\boldsymbol{x}_{0})$ with latent variables $\boldsymbol{x}_{1:L}$} \\
         &= \log \int \textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)} \frac{p_\theta(\boldsymbol{x}_{0:L})}{\textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}} \mathrm{d} \boldsymbol{x}_{1:L} \\
         &= \log \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}}\left[ \frac{p_\theta(\boldsymbol{x}_{0:L})}{\textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}} \right]  \\
-        & \geq \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}} \left[ \log \frac{p_\theta(\boldsymbol{x}_{0:L})}{\textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}} \right] := \text{ELBO}  \quad \text{; by Jensen's Inequality} \\
+        & \geq \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}} \left[ \log \frac{p_\theta(\boldsymbol{x}_{0:L})}{\textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}} \right] := \text{ELBO}  
+        \quad \text{; by Jensen's Inequality; Equality with $q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0) = p_\theta(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)$} \\
         &= -\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}}
         \Bigg[
         \sum_{t=1}^L
@@ -338,20 +342,79 @@
         - \log p_\theta\left(\boldsymbol{x}_0 \mid \boldsymbol{x}_1\right)
         \Bigg] 
         \end{aligned}
+        $$ -->
+        <b>Step 1</b>: Variational inference with latent variables $\boldsymbol{Z}:=\boldsymbol{X}_{1:L}$ <br>
         $$
-        Ignoring the constant and boundary terms in the second line gives
+        \begin{aligned}
+        \text{(1)}\quad
+        &\quad \ \log p_{\boldsymbol{X}_0;\boldsymbol{\theta}}(\boldsymbol{x}_0) \\
+        \text{(2)}\quad
+        &= \log \int p_\theta(\boldsymbol{x}_{0}, \boldsymbol{z}) \mathrm{d} \boldsymbol{z} \\
+        \text{(3)}\quad
+        &= \log \int \textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)} \frac{p_\theta(\boldsymbol{x}_{0}, \boldsymbol{z})}{\textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \mathrm{d} \boldsymbol{z} \\
+        \text{(4)}\quad
+        &= \log \mathop{\mathbb{E}}\limits_{\boldsymbol{Z} \sim \textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}}\left[ \frac{p_\theta(\boldsymbol{x}_{0}, \boldsymbol{z})}{\textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \right]  \\
+        \text{(5)}\quad
+        &= \mathop{\mathbb{E}}\limits_{\boldsymbol{Z} \sim \textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \left[ \log \frac{p_\theta(\boldsymbol{x}_{0}, \boldsymbol{z})}{\textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \right] 
+            + D_{\text{KL}}\Big(\textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)} \  \| \ p_\theta(\boldsymbol{z} \mid \boldsymbol{x}_0)\Big) \\
+        \text{(6)}\quad
+        & \geq \mathop{\mathbb{E}}\limits_{\boldsymbol{Z} \sim \textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \left[ \log \frac{p_\theta(\boldsymbol{x}_{0}, \boldsymbol{z})}{\textcolor{grey}{q(\boldsymbol{z} \mid \boldsymbol{x}_0)}} \right] := \text{ELBO}
+        \end{aligned}
         $$
-        -\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}}  
-        \left[ \sum_{t=1}^L 
+        <ul class="derivation-notes">
+          <li><b>(1)</b> This is the log-evidence.</li>
+          <li><b>(2)</b> Expand $p_\theta(\boldsymbol{x}_0)$ with latent variables $\boldsymbol{Z}$.
+            More concretely, $p_\theta(\boldsymbol{x}_0, \boldsymbol{z}) = p_\theta(\boldsymbol{x}_0 \mid \boldsymbol{z}) p_\theta(\boldsymbol{z})
+            = p_\theta(\boldsymbol{x}_0 \mid \boldsymbol{x}_{1:L}) p_\theta(\boldsymbol{x}_{1:L})
+            = p_\theta(\boldsymbol{x}_0 \mid \boldsymbol{x}_1) p_\theta(\boldsymbol{x}_1 \mid \boldsymbol{x}_2) \cdots p_\theta(\boldsymbol{x}_{L-1} \mid \boldsymbol{x}_L) p_{prior}(\boldsymbol{x}_L)
+            = p_{prior}(\boldsymbol{x}_L) \prod_{t=1}^L p_\theta(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t).$
+          This integral over the latent space is intractable, since there is too much to compute directly.</li>
+          <li><b>(3)</b> Variational inference by introducing $q(\boldsymbol{z} \mid \boldsymbol{x}_0)$, which is a known distribution.
+            More concretely, $q(\boldsymbol{z} \mid \boldsymbol{x}_0) 
+            = q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0) 
+            = q(\boldsymbol{x}_1 \mid \boldsymbol{x}_0) q(\boldsymbol{x}_2 \mid \boldsymbol{x}_1, \boldsymbol{x}_0) \cdots q(\boldsymbol{x}_L \mid \boldsymbol{x}_{L-1}, \ldots, \boldsymbol{x}_0)
+            = \prod_{t=1}^L q(\boldsymbol{x}_{t} \mid \boldsymbol{x}_{t-1}) .$
+          </li>
+          <li><b>(4)</b> Rewrite the integral as an expectation over $\boldsymbol{Z} \sim q(\boldsymbol{z} \mid \boldsymbol{x}_0)$.</li>
+          <li><b>(5)</b> Decompose log-evidence into ELBO plus a non-negative KL divergence.<br>
+              $q(\boldsymbol{z} \mid \boldsymbol{x}_0)$: known and tractable forward noising pathes from $\boldsymbol{x}_0$; <br>
+              $p_\theta(\boldsymbol{z} \mid \boldsymbol{x}_0)$: intractable, given generative model $p_\theta$ and observation $\boldsymbol{x}_0$, what distribution do we assign to the hidden path $\boldsymbol{x}_{1:L}$ that could have generated $\boldsymbol{x}_0$? <br>
+              </li>
+          <li><b>(6)</b> Jensen's inequality gives the ELBO lower bound; equality holds when $q(\boldsymbol{z} \mid \boldsymbol{x}_0)=p_\theta(\boldsymbol{z} \mid \boldsymbol{x}_0)$.</li>
+        </ul>
+        <b>Step 2</b>: Expand ELBO as 
+        $$
+        \begin{aligned}
+        \text{ELBO}
+        &= -\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}}
+        \Bigg[
+        \sum_{t=2}^L
         D_{\text{KL}}\Big(
-        \underbrace{\textcolor{blue}{q\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0\right)}}_{\textcolor{blue}{\text{known in closed Gaussian form}}} \ \Big\| \ 
-        \underbrace{\textcolor{Orange}{p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right)}}_{\textcolor{Orange}{\text{the term to be learned}}}
+        q\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0\right)
+        \ \big\|\ p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right)
+        \Big) \\
+        &\qquad\qquad
+        \textcolor{CadetBlue}{+D_{\text{KL}}\Big(
+        q\left(\boldsymbol{x}_L \mid \boldsymbol{x}_0\right)
+        \ \big\|\ p\left(\boldsymbol{x}_L\right)
+        \Big) 
+        - \log p_\theta\left(\boldsymbol{x}_0 \mid \boldsymbol{x}_1\right)}
+        \Bigg] 
+        \end{aligned}
+        $$
+        Ignoring the constant term $\textcolor{CadetBlue}{D_{\text{KL}}\Big(q\left(\boldsymbol{x}_L \mid \boldsymbol{x}_0\right) \ \big\|\ p\left(\boldsymbol{x}_L\right)\Big)}$ and the boundary term $\textcolor{CadetBlue}{\log p_\theta\left(\boldsymbol{x}_0 \mid \boldsymbol{x}_1\right)}$ in the second line gives
+        $$
+        -\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}}  
+        \left[ \sum_{t=2}^L 
+        D_{\text{KL}}\Big(
+        \textcolor{blue}{\underbrace{q\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0\right)}_{\text{known in closed Gaussian form}}} \ \Big\| \ 
+        \textcolor{Orange}{\underbrace{p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right)}_{\text{the term to be learned}}}
         \Big)   \right]
         $$
         where 
         $
         \textcolor{blue}{q\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t, \boldsymbol{x}_0\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; \tilde{\mu}_t(\boldsymbol{x}_t, \boldsymbol{x}_0), \tilde{\beta}_t\boldsymbol{I}\Bigr)}$
-        with posterior mean and posterior variance
+        with reverse mean and reverse variance
         $\textcolor{blue}{\tilde{\mu}_t\left(\boldsymbol{x}_t, \boldsymbol{x}_0\right) = 
         \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}\boldsymbol{x}_0 
         + \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}\boldsymbol{x}_t}$ and $\textcolor{blue}{\tilde{\beta}_t 
@@ -359,18 +422,19 @@
       </p>
       <p>
         Since when $\beta_t$ are small, $\textcolor{Orange}{p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right)}$ is also Gaussian, 
-        model the posterior as an isotropic Gaussian distribution as 
+        model the reverse as an isotropic Gaussian distribution as 
         $\textcolor{Orange}{p_\theta\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; \boldsymbol{\mu}_\theta(\boldsymbol{x}_t,t), \sigma_t^2 \boldsymbol{I}\Bigr)}$.
-        The posterior variance $\textcolor{Orange}{\sigma_t^2}$ can be empirically predefined as $\beta_t$ or $\textcolor{blue}{\tilde{\beta}_t}$, or an interpolation between these two, or a learnable parameter <a id="ref-1" href="#comment-1" class="comment-ref">[1]</a>.
-        Then this posterior distribution is fully described by the mean $\textcolor{Orange}{\boldsymbol{\mu}_\theta(\boldsymbol{x}_t,t)}$.
+        The reverse variance $\textcolor{Orange}{\sigma_t^2}$ can be empirically predefined as $\beta_t$ or $\textcolor{blue}{\tilde{\beta}_t}$, or an interpolation between these two, or a learnable parameter <a id="ref-1" href="#comment-1" class="comment-ref">[1]</a>.
+        Then this reverse distribution is fully described by the mean $\textcolor{Orange}{\boldsymbol{\mu}_\theta(\boldsymbol{x}_t,t)}$.
       </p>
       <p>
+        <b>Step 3:</b>
         Thanks to the above known Gaussian and parameterized Gaussian, the KL divergence can have a closed form solution.
-        The training objective (mean-prediction) becomes to minimize
+        The training objective (mean-prediction) becomes to <b>minimize</b>
         $$
         \textcolor{red}{\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{0} \sim p_{data}}}\ 
-        \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\cdot \mid \boldsymbol{x}_0)}}
-        \left[\sum_{t=1}^L \frac{1}{2\sigma_t^2} 
+        \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_{1:L} \sim \textcolor{grey}{q(\boldsymbol{x}_{1:L} \mid \boldsymbol{x}_0)}}
+        \left[\sum_{t=2}^L \frac{1}{2\sigma_t^2} 
         \Bigl\| \textcolor{blue}{\tilde{\boldsymbol{\mu}}_t(\boldsymbol{X}_t, \boldsymbol{X}_0)} 
         - \textcolor{Orange}{\boldsymbol{\mu}_\theta(\boldsymbol{X}_t, t)} 
         \Bigr\|^2 \right]
@@ -385,7 +449,7 @@
         \begin{gathered}
         \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0}
         \mathop{\mathbb{E}}\limits_{\boldsymbol{\mathcal{E}}}
-        \left[ \sum_{t=1}^L \frac{\beta_t^2}{2\textcolor{orange}{\sigma_t^2} \alpha_t (1 - \bar{\alpha}_t)} \Bigl\|\boldsymbol{\mathcal{E}} - \boldsymbol{\epsilon}_\theta(\boldsymbol{X}_t, t)\Bigr\|^2 \right] \\
+        \left[ \sum_{t=2}^L \frac{\beta_t^2}{2\textcolor{orange}{\sigma_t^2} \alpha_t (1 - \bar{\alpha}_t)} \Bigl\|\boldsymbol{\mathcal{E}} - \boldsymbol{\epsilon}_\theta(\boldsymbol{X}_t, t)\Bigr\|^2 \right] \\
         \text{with}\ \boldsymbol{X}_t = \sqrt{\bar{\alpha}_t} \boldsymbol{X}_0 + \sqrt{1-\bar{\alpha}_t} \boldsymbol{\mathcal{E}}
         \end{gathered}
         $$
