@@ -475,12 +475,14 @@
         Then we can compute $\bar{\alpha}_{t-\Delta t}$ and $\tilde{\beta}_t=\beta(t) \Delta t \frac{1-\bar{\alpha}_{t-\Delta t}}{1-\bar{\alpha}_t}$.
         As $\Delta t \to 0$, we have $\textcolor{blue}{\tilde{\beta}_t} \rightarrow \beta_t$. 
         Thus, the distinction between $\textcolor{blue}{\tilde{\beta}_t}$ and $\beta_t$ is only a finite-step artifact, and both work well in practice.
+        The Gaussianity of the reverse distribution can also be justified by the SDE formulation. The reverse mean $\textcolor{Orange}{\boldsymbol{\mu}_\theta(\boldsymbol{x}_t, t)}$ 
+        is also in line with the one derived by the SDE formulation.
       </p>
       <p>
         <a href="#ref-2" class="comment-ref">[2]</a>
         Reparameterization in detail: 
         subsitute with $\boldsymbol{x}_0 = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\boldsymbol{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}\right)$, 
-        the known poteriror mean (conditioned on $\boldsymbol{x}_0$) can be rewritten as
+        the known reverse mean (conditioned on $\boldsymbol{x}_0$) can be rewritten as
         $$
         \textcolor{blue}{
         \tilde{\mu}_t (\boldsymbol{x}_t ,\boldsymbol{x}_0)
