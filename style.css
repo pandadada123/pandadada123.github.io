@@ -500,6 +500,11 @@ details[open] .toc-title::after {
   color: var(--link);
 }
 
+[data-theme="dark"] #derivations ~ [style*="color" i][style*="blue" i],
+[data-theme="dark"] #derivations ~ * [style*="color" i][style*="blue" i] {
+  color: var(--link) !important;
+}
+
 .derivation-notes {
   margin: 0.4rem 0 1.1rem;
   padding-left: 0;

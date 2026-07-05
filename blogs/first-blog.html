@@ -191,7 +191,7 @@
 
       <h2 id="sampling">Sampling</h2>
       <p>
-        After training, we have the <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}$</span> to predict the noise added at each step. We can use it to generate new images. We start from a pure noise image and iteratively denoise it.
+        After training, we have the $\text{UNet}_{{\boldsymbol{\theta}}^*}$ to predict the noise added at each step. We can use it to generate new images. We start from a pure noise image and iteratively denoise it.
       </p>
       <p>
         This generation process is also called sampling, since at each step we are essentially sampling from the reverse diffusion distribution $p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)$ conditioned on the current realization $\boldsymbol{x}_t$.
@@ -206,11 +206,11 @@
             <li><b>Sample</b> initial noise image $\boldsymbol{x}_L$ from the prior distribution $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
             <li><b>For</b> $t=L,L-1,\ldots,1$ <b>do</b>
               <div class="alg-loop-body">
-                Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise <span style="color: var(--blue);">$\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$</span>; <br>
+                Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise $\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$; <br>
                 then calculate the reverse mean
                 $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
                 =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} 
-                \textcolor[RGB]{0,61,165}{\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)}\right)},
+                \text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)\right)},
                 $$ 
                 which fully describes the estimated reverse Gaussian distribution
                 $$
