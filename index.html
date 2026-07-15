@@ -60,14 +60,14 @@
         <article class="blog-entry">
           <div class="blog-entry-header">
             <h3><a href="blogs/first-blog.html">Diffusion Models - DDPM</a></h3>
-            <div class="meta"><span class="last-updated" data-blog="blogs/first-blog.html">Last updated May 22, 2026</span> &middot; 9 min read &middot; Wenxin Pan</div>
+            <div class="meta"><span class="last-updated" data-blog="blogs/first-blog.html">Last updated July 5, 2026</span> &middot; 9 min read &middot; Wenxin Pan</div>
           </div>
         </article>
 
         <article class="blog-entry">
           <div class="blog-entry-header">
             <h3><a href="blogs/second-blog.html">Score-based Diffusion Models</a></h3>
-            <div class="meta"><span class="last-updated" data-blog="blogs/second-blog.html">Last updated May 22, 2026</span> &middot; 11 min read &middot; Wenxin Pan</div>
+            <div class="meta"><span class="last-updated" data-blog="blogs/second-blog.html">Last updated June 25, 2026</span> &middot; 11 min read &middot; Wenxin Pan</div>
           </div>
         </article>
       </section>
@@ -127,17 +127,31 @@
   </footer>
 
   <script>
-    document.querySelectorAll('.last-updated[data-blog]').forEach(async (el) => {
-      try {
-        const res = await fetch(el.dataset.blog, { method: 'HEAD' });
-        const lm = res.headers.get('Last-Modified');
-        if (lm) {
-          const d = new Date(lm);
-          const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-          el.textContent = 'Last updated ' + label;
-        }
-      } catch (e) {}
-    });
+    (function () {
+      const repo = 'pandadada123/pandadada123.github.io';
+      const branch = 'main';
+      const dateFormat = { year: 'numeric', month: 'long', day: 'numeric' };
+
+      document.querySelectorAll('.last-updated[data-blog]').forEach(async (el) => {
+        try {
+          const params = new URLSearchParams({
+            sha: branch,
+            path: el.dataset.blog,
+            per_page: '1'
+          });
+          const res = await fetch(`https://api.github.com/repos/${repo}/commits?${params}`, {
+            headers: { Accept: 'application/vnd.github+json' }
+          });
+          if (res.ok) {
+            const [commit] = await res.json();
+            const commitDate = commit?.commit?.committer?.date || commit?.commit?.author?.date;
+            if (!commitDate) return;
+            const label = new Date(commitDate).toLocaleDateString('en-US', dateFormat);
+            el.textContent = 'Last updated ' + label;
+          }
+        } catch (e) {}
+      });
+    })();
   </script>
 
   <script>
