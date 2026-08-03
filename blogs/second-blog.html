@@ -399,7 +399,8 @@
         \begin{aligned}
         p\left(\mathbf{y} \mid \mathbf{x}_t\right) 
         & =\int \underbrace{p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t)}_{\large = p(\mathbf{y} \mid \mathbf{x}_0)\ \text{since}\  \mathbf{y} \perp\!\!\!\perp \mathbf{x}_t \mid \mathbf{x}_0}
-        \cdot \ p(\mathbf{x}_0 \mid \mathbf{x}_t) \ \mathrm{d} \mathbf{x}_0 \\[10pt]
+        \cdot \ 
+        \underbrace{p(\mathbf{x}_0 \mid \mathbf{x}_t)}_{\text{intractable}} \ \mathrm{d} \mathbf{x}_0 \\[10pt]
         & =\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}\left[p(\mathbf{y} \mid \mathbf{x}_0)\right] \\[-4pt]
         & \hspace{14em} \Big\downarrow \ \text{key approximation} \\[-4pt]
         & \simeq  p(\mathbf{y} \mid \textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}) \\
