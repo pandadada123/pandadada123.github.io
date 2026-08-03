@@ -79,15 +79,15 @@
       <p>
       Forward SDE: <i>(stochastic)</i>
         \[
-        \mathrm{d} \mathbf{x}_t = \mathbf{f}(\mathbf{x}_t, t) \mathrm{d} t + g(t) \mathrm{d} \mathbf{w}_t
+        \mathrm{d} \boldsymbol{X}_t = \mathbf{f}(\boldsymbol{X}_t, t) \mathrm{d} t + g(t) \mathrm{d} \boldsymbol{W}_t
         \]
       Reverse SDE: <i>(stochastic)</i>
         \[
-        \mathrm{d} \mathbf{x}_t = \left[ \mathbf{f}(\mathbf{x}_t, t) - g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \right] \mathrm{d} t + g(t) \mathrm{d} \mathbf{\bar{w}}_t
+        \mathrm{d} \bar{\boldsymbol{X}}_t = \left[ \mathbf{f}(\bar{\boldsymbol{X}}_t, t) - g(t)^2 \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t)} \right] \mathrm{d} t + g(t) \mathrm{d} \boldsymbol{\bar{W}}_t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t) = \nabla_{\bar{\boldsymbol{x}}_t} \log p_t(\bar{\boldsymbol{x}}_t) \big|_{\bar{\boldsymbol{x}}_t = \bar{\boldsymbol{X}}_t}}
         \]
       The <i>corresponding</i> probability flow ODE: <i>(deterministic)</i>
         \[
-        \mathrm{d} \mathbf{x}_t = \left[ \mathbf{f}(\mathbf{x}_t, t) - \frac{1}{2}g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t)} \right] \mathrm{d} t 
+        \mathrm{d} \bar{\boldsymbol{X}}_t = \left[ \mathbf{f}(\bar{\boldsymbol{X}}_t, t) - \frac{1}{2}g(t)^2 \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t)} \right] \mathrm{d} t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t) = \nabla_{\bar{\boldsymbol{x}}_t} \log p_t(\bar{\boldsymbol{x}}_t) \big|_{\bar{\boldsymbol{x}}_t = \bar{\boldsymbol{X}}_t}}
         \]
       </p>
       <p>
@@ -100,16 +100,19 @@
             <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--Green);">If it is linear in $\mathbf{x}_t$, it is often written as $\mathbf{f}(\mathbf{x}_t, t) = f(t)\mathbf{x}_t$ with $f(t): \mathbb{R} \to \mathbb{R}$ (usually in Variance Preserving (VP) SDEs). Same for the reverse SDE. This is an important point in score training.</div>
           </li>
           <li>$g(\cdot): \mathbb{R} \to \mathbb{R}$ is the <i>diffusion coefficient</i>, deterministic, controls how much randomness is added</li>
-          <li>$\{\mathbf{w}_t\}_{t=0}^T$: standard Wiener process, represents the integral of white Gaussian noise</li>
-              <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--fg-muted);">The function $\mathbf{w}_t$ is continuous everywhere but differentiable nowhere, $\frac{\mathrm{d}\mathbf{w}_t}{\mathrm{d} t}$ does not exist.</div>
-          <li>$\mathrm{d}\mathbf{w}_t$: infinitesimal white (Gaussian) noise $\mathcal{N}(\mathbf{0}, \mathrm{d}t \mathbf{I})$</li>
-          <li>$\{\bar{\mathbf{w}}_t\}_{t=T}^0$: standard Wiener process in the reverse-time direction. The $\mathrm{d} t$ is an infinitesimal negative time step in the reverse SDE.</li>
+          <li>$\{\boldsymbol{W}_t\}_{t=0}^T$: standard Wiener process, represents the integral of white Gaussian noise</li>
+              <div style="font-size: 0.85em; margin-top: 0.3rem; color: var(--fg-muted);">The function $\boldsymbol{W}_t$ is continuous everywhere but differentiable nowhere, $\frac{\mathrm{d}\boldsymbol{W}_t}{\mathrm{d} t}$ does not exist.</div>
+          <li>$\mathrm{d}\boldsymbol{W}_t$: infinitesimal white (Gaussian) noise $\mathcal{N}(\mathbf{0}, \mathrm{d}t \mathbf{I})$</li>
+          <li>$\{\bar{\boldsymbol{W}}_t\}_{t=T}^0$: standard Wiener process in the reverse-time direction. The $\mathrm{d} t$ is an infinitesimal negative time step in the reverse SDE.</li>
         </ul>
       </p>
       <p>
         The forward process is known and designed.
         The generation process is based on the reverse SDE, but we don't know the score function in this reverse SDE. 
         So we need to utilize the forward SDE to train a UNet $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ to predict the score function at each diffusion step, such that we are able to use the reverse process to generate new images.
+      </p>
+      <p>
+        With an abuse of notation, the lower case means both random variables and realizations in the following text.    
       </p>
 
     <h2 id="training">Training</h2>
