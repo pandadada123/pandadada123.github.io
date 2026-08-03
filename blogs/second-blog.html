@@ -398,7 +398,7 @@
         $$
         \begin{aligned}
         p\left(\mathbf{y} \mid \mathbf{x}_t\right) 
-        & =\int \underbrace{p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t)}_{\large = p(\mathbf{y} \mid \mathbf{x}_0)\ \text{with}\  \mathbf{y} \perp\!\!\!\perp \mathbf{x}_t \mid \mathbf{x}_0}
+        & =\int \underbrace{p(\mathbf{y} \mid \mathbf{x}_0, \mathbf{x}_t)}_{\large = p(\mathbf{y} \mid \mathbf{x}_0)\ \text{since}\  \mathbf{y} \perp\!\!\!\perp \mathbf{x}_t \mid \mathbf{x}_0}
         \cdot \ p(\mathbf{x}_0 \mid \mathbf{x}_t) \ \mathrm{d} \mathbf{x}_0 \\[10pt]
         & =\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}\left[p(\mathbf{y} \mid \mathbf{x}_0)\right] \\[-4pt]
         & \hspace{14em} \Big\downarrow \ \text{key approximation} \\[-4pt]
@@ -408,7 +408,7 @@
         $$
         where $\textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}$ is the posterior mean of $\mathbf{x}_0$ given $\mathbf{x}_t$ 
         — the average over all plausible clean images consistent with the noisy observation $\mathbf{x}_t$ 
-        — and can also be written as $\textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 ]}$. <br>
+        — more explicitly as $\textcolor{blue}{\mathop{\mathbb{E}}\limits_{\mathbf{X}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{X}_0 ]}$. <br>
         The approximation replaces the expectation of $p(\mathbf{y} \mid \mathbf{x}_0)$ with $p(\mathbf{y} \mid \cdot)$ evaluated at the posterior mean, effectively swapping the expectation and the nonlinear function.
         </p>
         <p>
@@ -421,9 +421,9 @@
         The Tweedie's formula theoretically gives
         \begin{aligned}
         \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) := \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
-        = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t\right)}\right)
+        = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t\right)}\right),
         \end{aligned}
-      
+        which is a function of $\mathbf{x}_t$. It says we don't need $p(\mathbf{x}_0 \mid \mathbf{x}_t)$ but only need $p_t(\mathbf{x}_t)$.
         Then we are able to estimate it by the pre-trained unconditional score-predictor model $\textcolor{red}{\mathbf{s}_{\boldsymbol{\phi}}^* (\mathbf{x}_t, t)}$ 
         or noise-predictor model $\boldsymbol{\epsilon}_{\theta^*}(\mathbf{x}_t, t)$ as
         $$
