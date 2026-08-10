@@ -83,16 +83,22 @@
         \]
       Reverse SDE: <i>(stochastic)</i>
         \[
-        \mathrm{d} \bar{\boldsymbol{X}}_t = \left[ \mathbf{f}(\bar{\boldsymbol{X}}_t, t) - g(t)^2 \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t)} \right] \mathrm{d} t + g(t) \mathrm{d} \boldsymbol{\bar{W}}_t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t) = \nabla_{\bar{\boldsymbol{x}}_t} \log p_t(\bar{\boldsymbol{x}}_t) \big|_{\bar{\boldsymbol{x}}_t = \bar{\boldsymbol{X}}_t}}
-        \]
-      The <i>corresponding</i> probability flow ODE: <i>(deterministic)</i>
-        \[
-        \mathrm{d} \bar{\boldsymbol{X}}_t = \left[ \mathbf{f}(\bar{\boldsymbol{X}}_t, t) - \frac{1}{2}g(t)^2 \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t)} \right] \mathrm{d} t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t(\bar{\boldsymbol{X}}_t) = \nabla_{\bar{\boldsymbol{x}}_t} \log p_t(\bar{\boldsymbol{x}}_t) \big|_{\bar{\boldsymbol{x}}_t = \bar{\boldsymbol{X}}_t}}
+        \mathrm{d} {\boldsymbol{X}}_t = \left[ \mathbf{f}({\boldsymbol{X}}_t, t) - g(t)^2 \textcolor{red}{\mathbf{s}_t({\boldsymbol{X}}_t)} \right] \mathrm{d} t + g(t) \mathrm{d} \boldsymbol{\bar{W}}_t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t({\boldsymbol{X}}_t) = \nabla_{{\boldsymbol{x}}_t} \log p_t({\boldsymbol{x}}_t) \big|_{{\boldsymbol{x}}_t = {\boldsymbol{X}}_t}}
         \]
       </p>
       <p>
-        <i>Corresponding</i> means the probability flow ODE is designed to share the same marginal distribution $\{p_t(\mathbf{x}_t)\}_{t=0}^T$ as the SDE. Notably, there is a factor $\frac{1}{2}$.
+      Probability flow ODE: <i>(deterministic and invertible)</i>
+        \[
+        \mathrm{d} {\boldsymbol{X}}_t = \left[ \mathbf{f}({\boldsymbol{X}}_t, t) - \frac{1}{2}g(t)^2 \textcolor{red}{\mathbf{s}_t({\boldsymbol{X}}_t)} \right] \mathrm{d} t \quad \text{with} \quad \textcolor{red}{\mathbf{s}_t({\boldsymbol{X}}_t) = \nabla_{{\boldsymbol{x}}_t} \log p_t({\boldsymbol{x}}_t) \big|_{{\boldsymbol{x}}_t = {\boldsymbol{X}}_t}}
+        \]
       </p>
+      <p>
+        The reverse SDE and probability flow ODE are designed to share the same marginal distribution $\{p_t(\mathbf{x}_t)\}_{t=0}^T$ at every $t$ as the forward SDE. Notably, there is a factor $\frac{1}{2}$ in the ODE. 
+      </p>
+      <p>
+        Though with the same marginal distribution, they involve different trajectories, as shown in the above figure.
+      </p>
+
       <h3 id="notation">Notations</h3>
       <p>
         <ul class="link-list">
@@ -112,7 +118,7 @@
         So we need to utilize the forward SDE to train a UNet $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ to predict the score function at each diffusion step, such that we are able to use the reverse process to generate new images.
       </p>
       <p>
-        With an abuse of notation, the lower case means both random variables and realizations in the following text.    
+        With an abuse of notation, the lower case $\mathbf{x}_t$ means both random variables and realizations in the following text.    
       </p>
 
     <h2 id="training">Training</h2>
