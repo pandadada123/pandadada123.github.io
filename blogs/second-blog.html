@@ -93,7 +93,7 @@
         \]
       </p>
       <p>
-        The reverse SDE and probability flow ODE are designed to share the same marginal distribution $\{p_t(\mathbf{x}_t)\}_{t=0}^T$ at every $t$ as the forward SDE. Notably, there is a factor $\frac{1}{2}$ in the ODE. 
+        The reverse SDE and probability flow ODE are constructed to share the same marginal distribution $\{p_t(\mathbf{x}_t)\}_{t=0}^T$ at every $t$ as the forward SDE. Notably, there is a factor $\frac{1}{2}$ in the ODE. 
       </p>
       <p>
         Though with the same marginal distribution, they involve different trajectories, as shown in the above figure.
@@ -114,7 +114,7 @@
       </p>
       <p>
         The forward process is known and designed.
-        The generation process is based on the reverse SDE, but we don't know the score function in this reverse SDE. 
+        The generation process is based on the reverse SDE or ODE, but we don't know the score function in this reverse SDE or ODE.
         So we need to utilize the forward SDE to train a UNet $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ to predict the score function at each diffusion step, such that we are able to use the reverse process to generate new images.
       </p>
       <p>
