@@ -658,6 +658,28 @@ a.comment-ref:hover {
   padding: 0.75rem 1rem;
 }
 
+.algorithm-scroll-x .algorithm-body {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.algorithm-scroll-x .algorithm-body ol {
+  min-width: max-content;
+}
+
+.algorithm-scroll-x .algorithm-body ol li {
+  width: max-content;
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+.algorithm-scroll-x .algorithm-body .alg-loop-body {
+  width: max-content;
+  min-width: 100%;
+  overflow: visible;
+}
+
 .algorithm-body ol {
   list-style-type: none;
   counter-reset: line-counter;
