@@ -42,13 +42,13 @@
     <header class="blog-header">
 <h1>Score-based Diffusion Models</h1>
       <div class="blog-meta">
-        <span class="last-updated"></span>&nbsp;&middot;&nbsp;<span class="read-time"></span>&nbsp;&middot;&nbsp;Wenxin Pan
+        Created May 5, 2026&nbsp;&middot;&nbsp;<span class="last-updated" data-last-updated="Aug 11, 2026"></span>&nbsp;&middot;&nbsp;<span class="read-time"></span>
       </div>
     </header>
 
     <nav class="toc">
       <details open>
-      <summary class="toc-title">Table of Contents</summary>
+      <summary class="toc-title">Contents</summary>
       <ol>
         <li><a href="#useful-links">Useful Links</a></li>
         <li><a href="#introduction">Introduction</a></li>
@@ -523,10 +523,17 @@
 
   <script>
     (function () {
-      const d = new Date(document.lastModified);
-      const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
       const el = document.querySelector('.last-updated');
-      if (el) el.textContent = 'Last updated ' + label;
+      if (el) {
+        const fixedDate = el.dataset.lastUpdated;
+        if (fixedDate) {
+          el.textContent = 'Last updated ' + fixedDate;
+        } else {
+          const d = new Date(document.lastModified);
+          const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          el.textContent = 'Last updated ' + label;
+        }
+      }
 
       const body = document.querySelector('.blog-body');
       const rt = document.querySelector('.read-time');

@@ -285,7 +285,7 @@ h2::before {
 }
 
 .meta {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--fg-muted);
   margin-bottom: 0.5rem;
 }

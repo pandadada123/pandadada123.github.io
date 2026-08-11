@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FBK41DCHCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-FBK41DCHCM');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imaging Family — Wenxin Pan</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script>
+    MathJax = {
+      loader: {load: ['[tex]/color']},
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        packages: {'[+]': ['color']}
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="site-name">Wenxin Pan</a>
+      <nav>
+        <a href="/#blogs">Blogs</a>
+        <a href="/#resources">Resources</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">&#9680;</button>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-page">
+    <header class="blog-header">
+      <h1>Imaging Family</h1>
+      <div class="blog-meta">
+        Created Aug 11, 2026&nbsp;&middot;&nbsp;<span class="last-updated"></span>&nbsp;&middot;&nbsp;<span class="read-time"></span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <details open>
+      <summary class="toc-title">Contents</summary>
+      <ol>
+        <li><a href="#introduction">Introduction</a></li>
+      </ol>
+      </details>
+    </nav>
+
+    <div class="blog-body">
+      <h2 id="introduction">Introduction</h2>
+      <p>
+        We all use a camera to take pictures. A camera is an imaging device that uses visible light. 
+        When you go to a hospital, you may use X-ray imaging to see your bones, or use MRI to see your soft tissues, or use ultrasound to see your internal organs.
+      </p>
+      <p>
+        More generally, many different kinds of waves can be used to "take a picture".
+        This includes different wavelengths of electromagnetic waves (light, X-ray, radio, etc.)
+        and mechanical waves (sound, ultrasound, etc.).
+      </p>
+    </div>
+  </article>
+
+  <footer>
+    <div class="footer-inner">
+      <p>&copy; 2026 Wenxin Pan</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const d = new Date(document.lastModified);
+      const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      const el = document.querySelector('.last-updated');
+      if (el) el.textContent = 'Last updated ' + label;
+
+      const body = document.querySelector('.blog-body');
+      const rt = document.querySelector('.read-time');
+      if (body && rt) {
+        const words = body.innerText.trim().split(/\s+/).length;
+        const mins = Math.max(1, Math.round(words / 200));
+        rt.textContent = mins + ' min read';
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      if (saved) document.documentElement.setAttribute("data-theme", saved);
+      else if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.setAttribute("data-theme", "dark");
+    })();
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+  </script>
+
+  <script>
+    (function () {
+      const headings = Array.from(document.querySelectorAll('.blog-body h2[id], .blog-body h3[id]'));
+      const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+      if (!headings.length || !tocLinks.length) return;
+
+      function getActive() {
+        const threshold = window.scrollY + window.innerHeight * 0.25;
+        let active = headings[0];
+        for (const h of headings) {
+          if (h.getBoundingClientRect().top + window.scrollY <= threshold) active = h;
+        }
+        return active;
+      }
+
+      function update() {
+        const activeId = getActive()?.id;
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + activeId));
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+  </script>
+</body>
+</html>
