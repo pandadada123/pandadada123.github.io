@@ -150,7 +150,12 @@
         Then construct $\boldsymbol{x}_t = \sqrt{\bar{\alpha}_t}\boldsymbol{x}_0+\sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}$ and calculate the single-sample loss
         \[
           \hat{\mathcal{L}}_{\text{SGD}} =
-          \left\| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{x}_t, t) \right\|^2.
+          \left\| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{x}_t, t) \right\|^2
+        \]
+        \[
+          \text{with}\ \boldsymbol{x}_t
+          = \sqrt{\bar{\alpha}_t}\boldsymbol{x}_0
+          + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}.
         \]
         The UNet parameters ${\boldsymbol{\theta}}$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
 
@@ -206,26 +211,30 @@
             <li><b>Sample</b> initial noise image $\boldsymbol{x}_L$ from the prior distribution $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$</li>
             <li><b>For</b> $t=L,L-1,\ldots,1$ <b>do</b>
               <div class="alg-loop-body">
-                Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise $\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$; <br>
-                then calculate the reverse mean
-                $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
-                =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} 
-                \text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)\right)},
-                $$ 
-                which fully describes the estimated reverse Gaussian distribution
-                $$
-                \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t 
-                = \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1}; 
-                \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t), \sigma_t^2\boldsymbol{I}\Bigr) }
-                $$
-                Then <b>sample</b> the next realization from this reverse distribution $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$. <br>
-                Since this reverse distribution is Gaussian, this process is equivalent to computing<br>
-                $\qquad \boldsymbol{x}_{t-1} 
-                = \textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)} + \textcolor{Orange}{\sigma_t} \boldsymbol{z}$, 
-                where $\boldsymbol{z}$ is a realization from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$, <br>
-                and the reverse std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ <br>
-                (see more in the next section).<br>
-                <em>Conceptually is "mean + randomness"</em>
+                <div class="alg-substep"><span class="alg-substep-number">2.1:</span><div>
+                  Let $\boldsymbol{x}_t$ and time step $t$ go through the deterministic network and get the predicted noise $\text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)$; <br>
+                  then calculate the reverse mean
+                  $$\textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)
+                  =\dfrac{1}{\sqrt{\alpha_t}}\left(\boldsymbol{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}
+                  \text{UNet}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)\right)},
+                  $$
+                  which fully describes the estimated reverse Gaussian distribution
+                  $$
+                  \qquad \textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}\left(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t
+                  = \boldsymbol{x}_t\right) = \mathcal{N}\Bigl(\boldsymbol{x}_{t-1};
+                  \ \boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t), \sigma_t^2\boldsymbol{I}\Bigr) }.
+                  $$
+                </div></div>
+                <div class="alg-substep"><span class="alg-substep-number">2.2:</span><div>
+                  Then <b>sample</b> the next realization from this reverse distribution $\textcolor{Orange}{p_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_{t-1} \mid \boldsymbol{X}_t = \boldsymbol{x}_t)}$.<br>
+                  Since this reverse distribution is Gaussian, this process is equivalent to computing<br>
+                  $\qquad \boldsymbol{x}_{t-1}
+                  = \textcolor{Orange}{\boldsymbol{\mu}_{{\boldsymbol{\theta}}^*}(\boldsymbol{x}_t, t)} + \textcolor{Orange}{\sigma_t} \boldsymbol{z}$,
+                  where $\boldsymbol{z}$ is a realization from $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$, <br>
+                  and the reverse std $\textcolor{Orange}{\sigma_t}$ can be empirically set as $\sqrt{\beta_t}$ <br>
+                  (see more in the next section).<br>
+                  <em>Conceptually is "mean + randomness"</em>
+                </div></div>
               </div>
             </li>
             <li><b>Repeat</b> until $t=1$ to get the final generated image $\boldsymbol{x}_0$.</li>
