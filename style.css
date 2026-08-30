@@ -474,7 +474,7 @@ details[open] .toc-title::after {
 
 /* Blog body */
 .blog-body h2 {
-  font-size: 1.35rem;
+  font-size: 1.40rem;
   font-weight: 700;
   letter-spacing: normal;
   text-transform: none;
@@ -491,7 +491,7 @@ details[open] .toc-title::after {
 }
 
 .blog-body h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin-top: 1.75rem;
   margin-bottom: 0.5rem;
@@ -507,6 +507,11 @@ details[open] .toc-title::after {
 
 .blog-body a {
   color: var(--link);
+}
+
+.gw-motivation-list {
+  padding-left: 2.5rem;
+  margin-bottom: 1.1rem;
 }
 
 [data-theme="dark"] #derivations ~ [style*="color" i][style*="blue" i],
