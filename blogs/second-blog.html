@@ -336,19 +336,22 @@
       </p>
       <h3 id="modifications-of-sampling-process">Modifications of sampling process</h3>
       <p>
-        Unconditional generation:
+        Unconditional generation samples from $p_0(\mathbf{x}_0)$, solves:
         $$
         \mathrm{d} \mathbf{x}_t
         =\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right)}\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t
         $$
 
-        Conditional generation (controllable generation):<br>  
-        with the key fact that $p_t\left(\mathbf{x}_t \mid \mathbf{y}\right) = \frac{p_t (\mathbf{x}_t) \cdot p_t(\mathbf{y} \mid \mathbf{x}_t)}{p_t (\mathbf{y})}$ and $\nabla_{\mathbf{x}_t} p_t (\mathbf{y}) =0$,
+        Conditional generation (controllable generation) samples from $p_0(\mathbf{x}_0 \mid \mathbf{y})$, solves:
+        $$
+        \mathrm{d} \mathbf{x}_t = \left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{MediumVioletRed}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \mid \mathbf{y}\right)}\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t \\
+
+        $$
+        with $p_t\left(\mathbf{x}_t \mid \mathbf{y}\right) = \frac{p_t (\mathbf{x}_t) \cdot p_t(\mathbf{y} \mid \mathbf{x}_t)}{p_t (\mathbf{y})}$ and $\nabla_{\mathbf{x}_t} p_t (\mathbf{y}) =0$,
         $$
         \begin{aligned}
         \mathrm{d} \mathbf{x}_t
-        &=\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \mid \mathbf{y}\right)}\right] \mathrm{d} t+g(t) \mathrm{d} \overline{\mathbf{w}}_t \\
-        &=\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\left[\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right) 
+        =\left[f(t) \mathbf{x}_t-g(t)^2 \textcolor{red}{\left[\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t \right) 
         + \textcolor{magenta}{
           \nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{y} \mid \mathbf{x}_t \right)}
         \right]}
@@ -359,7 +362,6 @@
       </p>
       
       <p>
-        In this conditional generation,
       </p>
       <ul class="link-list">
         <li><strong>Unconditional score (Prior score)</strong> $\textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t(\mathbf{x}_t) \approx \mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t)}$ can be estimated by training on a natural image dataset, by unconditional score model.</li>
