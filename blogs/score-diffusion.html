@@ -115,7 +115,7 @@
       </p>
       <p>
         The forward process is known and designed.
-        The generation process is based on the reverse SDE or ODE, but we don't know the score function in this reverse SDE or ODE.
+        The generation process is based on solving the reverse SDE or ODE, but we don't know the score function in this reverse SDE or ODE.
         So we need to utilize the forward SDE to train a UNet $\mathbf{s}_{\boldsymbol{\phi}}(\mathbf{x}_t, t)$ to predict the score function at each diffusion step, such that we are able to use the reverse process to generate new images.
       </p>
       <p>
@@ -255,7 +255,7 @@
         $$
         The discrete and continuous formulations are consistent through
         $$
-        \sqrt{\bar{\alpha}_t} \approx \mu(t), \quad \sqrt{1-\bar{\alpha}_t} \approx \gamma(t)
+        \sqrt{\bar{\alpha}_t} \approx \mu(t), \quad \color{Green}{\sqrt{1-\bar{\alpha}_t} \approx \gamma(t)}
         $$
         This follows from the $\log \left(1-\beta_s\right) \approx-\beta_s$ when $\beta_s$ is small.<br>
       </p>
@@ -433,7 +433,7 @@
         <p>
         The Tweedie's formula theoretically gives
         \begin{aligned}
-        \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) := \mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
+        \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) :=\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
         = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t\right)}\right),
         \end{aligned}
         which is a function of $\mathbf{x}_t$. It says we don't need $p(\mathbf{x}_0 \mid \mathbf{x}_t)$ but only need $p_t(\mathbf{x}_t)$.
