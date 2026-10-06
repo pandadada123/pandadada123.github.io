@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog Post — Wenxin Pan</title>
+  <title>Blog Post — PAN Wenxin</title>
   <link rel="stylesheet" href="../style.css" />
   <script>
     MathJax = {
@@ -29,7 +29,7 @@
 <body>
   <header>
     <div class="header-inner">
-      <a href="/" class="site-name">Wenxin Pan</a>
+      <a href="/" class="site-name">PAN Wenxin</a>
       <nav>
         <a href="/#blogs">Blogs</a>
         <a href="/#resources">Resources</a>
@@ -192,7 +192,8 @@
         For example, from the previous training steps we already have a model $\text{UNet}_{{\boldsymbol{\theta}}}$ and it gives a prediction $\text{UNet}_{{\boldsymbol{\theta}}}(\boldsymbol{x}_t, t)=0.3$.
         At this training step we know the realized noise value $\boldsymbol{\epsilon}$ is 0.5, so we calculate the gradient and update ${\boldsymbol{\theta}}$ to make the UNet predict 0.31 instead of 0.3 at this realized pair $(\boldsymbol{x}_t,t)$.
         Over many training iterations, it learns a function that predicts the <i>expected noise</i> 
-        $\text{UNet}_{\boldsymbol{\theta}^*}(\boldsymbol{x}_t, t) \approx \mathbb{E}[\boldsymbol{\mathcal{E}} \mid \boldsymbol{X}_t=\boldsymbol{x}_t, T=t]$.
+        $\text{UNet}_{\boldsymbol{\theta}^*}(\boldsymbol{x}_t, t) \approx \mathbb{E}[\boldsymbol{\mathcal{E}} \mid \boldsymbol{X}_t=\boldsymbol{x}_t, T=t]$. 
+        This can be further validated by Tweedie formula (refer to <a href="score-diffusion.html">Score-based Diffusion Models</a>).
       </p>
 
       <h2 id="sampling">Sampling</h2>
@@ -520,7 +521,7 @@
 
   <footer>
     <div class="footer-inner">
-      <p>&copy; 2026 Wenxin Pan</p>
+      <p>&copy; 2026 PAN Wenxin</p>
     </div>
   </footer>
 

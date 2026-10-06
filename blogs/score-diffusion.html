@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog Post — Wenxin Pan</title>
+  <title>Blog Post — PAN Wenxin</title>
   <link rel="stylesheet" href="../style.css" />
   <script>
     MathJax = {
@@ -29,7 +29,7 @@
 <body>
   <header>
     <div class="header-inner">
-      <a href="/" class="site-name">Wenxin Pan</a>
+      <a href="/" class="site-name">PAN Wenxin</a>
       <nav>
         <a href="/#blogs">Blogs</a>
         <a href="/#resources">Resources</a>
@@ -228,13 +228,17 @@
         </li>
       </ul>
 
-      <h3 id="connection-to-ddpm">Connection to DDPM and noise predictor</h3>
+      <h3 id="connecting-to-ddpm">Connecting to DDPM and noise predictor</h3>
       <p>
         In DDPM we defined the discrete-time kernels 
         $$
+        \begin{aligned}
         \mathbf{x}_t
-        := \sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+ \sqrt{\beta_t} \cdot \boldsymbol{\epsilon}        $$
-        and we can derive
+        &:= \sqrt{1-\beta_t} \cdot \mathbf{x}_{t-1}+ \sqrt{\beta_t} \cdot \boldsymbol{\epsilon} \\
+        &= \sqrt{\bar{\alpha}_t}\cdot \mathbf{x}_0 + \sqrt{(1-\bar{\alpha}_t)} \cdot \boldsymbol{\epsilon}
+        \end{aligned}
+        $$
+        such that
         $$
         \textcolor{Green}{p_{0t}(\mathbf{x}_t | \mathbf{x}_0)}
         =\mathcal{N} \left(\mathbf{x}_t ; \sqrt{\bar{\alpha}_t}\cdot \mathbf{x}_0 , \ (1-\bar{\alpha}_t) \mathbf{I} \right)
@@ -260,15 +264,37 @@
         This follows from the $\log \left(1-\beta_s\right) \approx-\beta_s$ when $\beta_s$ is small.<br>
       </p>
       <p>
-        Compare the training loss with DDPM we can observe that, 
+        Comparing the training loss with DDPM, we can observe that, 
         <b>a score predictor and a noise predictor are equivalent</b>, only with a difference in a scaling factor as
         $$
-        \textcolor{red}{\mathbf{s}_{\phi^*}(\mathbf{x}_t, t)} = 
-        \textcolor{Green}{-\frac{1}{\sqrt{1-\bar{\alpha}_t}}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right) 
-        = \textcolor{Green}{- \frac{1}{\gamma_t}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right)
+        \textcolor{red}{\mathbf{s}_{\phi^*}(\mathbf{x}_t, t)} 
+        = \textcolor{Green}{-\frac{1}{\gamma_t}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right)
+        = \textcolor{Green}{-\frac{1}{\sqrt{1-\bar{\alpha}_t}}} \boldsymbol{\epsilon}_{\mathbf{\theta}^*}\left(\mathbf{x}_t, t\right) 
         $$
         Therefore the choice of predictors is not a fundamental modeling difference but only a implementation difference and can be used (mostly) interchangeably. <br>
         Taking into account of the scaling factor, the above training loss for score predictor is equivalent to the training loss for noise predictor in DDPM.
+      </p>
+      <p>
+        This equivalence can be further explaind by <b>Tweedie formula</b>. 
+        It theoretically gives the posterior mean as
+        \begin{aligned}
+        \textcolor{blue}{\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0 \sim p(\boldsymbol{x}_0 \mid \boldsymbol{x}_t)}[\boldsymbol{X}_0 \mid \boldsymbol{X}_t=\boldsymbol{x}_t]}
+        = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\boldsymbol{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\boldsymbol{x}_t} \log p_t\left(\boldsymbol{x}_t\right)}\right),
+        \end{aligned}
+        which is a function of $\mathbf{x}_t$. 
+        Let us use this posterior mean as the estimate of $\boldsymbol{x}_0$ and denote $\textcolor{blue}{\hat{\boldsymbol{x}}_0(\boldsymbol{x}_t) :=\mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0 \sim p(\boldsymbol{x}_0 \mid \boldsymbol{x}_t)}[\boldsymbol{X}_0 \mid \boldsymbol{X}_t=\boldsymbol{x}_t]}$.
+      </p>
+      <p>
+        Substitute it into the formula of $\boldsymbol{x_t}$ we can have
+        \begin{aligned}
+        \hat{\boldsymbol{\epsilon}}(\boldsymbol{x}_t) = \mathop{\mathbb{E}}\limits_{\boldsymbol{\mathcal{E}} \sim p(\epsilon \mid \boldsymbol{x}_t)}[\boldsymbol{\mathcal{E}} \mid \boldsymbol{X}_t=\boldsymbol{x}_t]
+        = -\sqrt{(1-\bar{\alpha}_t)} \textcolor{red}{\nabla_{\boldsymbol{x}_t} \log p_t\left(\boldsymbol{x}_t\right)},
+        \end{aligned}
+        which exactly shows the relationship above.
+      </p>
+      <p>
+        The advantage of Tweedie itself is that we don't need $p(\mathbf{x}_0 \mid \mathbf{x}_t)$ but only $p_t(\mathbf{x}_t)$ to obtain an estimate $\hat{\boldsymbol{x}}_0$.
+        The key point that this equation holds is that the noise is additive Gaussian. The prior $p(\boldsymbol{x}_0)$ can be any form.
       </p>
       
 
@@ -436,7 +462,6 @@
         \textcolor{blue}{\hat{\mathbf{x}}_0(\mathbf{x}_t) :=\mathop{\mathbb{E}}\limits_{\mathbf{x}_0 \sim p(\mathbf{x}_0 \mid \mathbf{x}_t)}[\mathbf{x}_0 \mid \mathbf{x}_t]}
         = \frac{1}{\sqrt{\bar{\alpha}_t}}\left(\mathbf{x}_t+(1-\bar{\alpha}_t) \textcolor{red}{\nabla_{\mathbf{x}_t} \log p_t\left(\mathbf{x}_t\right)}\right),
         \end{aligned}
-        which is a function of $\mathbf{x}_t$. It says we don't need $p(\mathbf{x}_0 \mid \mathbf{x}_t)$ but only need $p_t(\mathbf{x}_t)$.
         Then we are able to estimate it by the pre-trained unconditional score-predictor model $\textcolor{red}{\mathbf{s}_{\boldsymbol{\phi}}^* (\mathbf{x}_t, t)}$ 
         or noise-predictor model $\boldsymbol{\epsilon}_{\theta^*}(\mathbf{x}_t, t)$ as
         $$
@@ -520,7 +545,7 @@
 
   <footer>
     <div class="footer-inner">
-      <p>&copy; 2026 Wenxin Pan</p>
+      <p>&copy; 2026 PAN Wenxin</p>
     </div>
   </footer>
 
