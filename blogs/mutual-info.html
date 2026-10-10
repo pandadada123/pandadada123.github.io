@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mutual Information - PAN Wenxin</title>
+  <title>What is the Mutual Information $\small{I(X;Y=y)}$- PAN Wenxin</title>
   <link rel="stylesheet" href="../style.css" />
   <script>
     MathJax = {
@@ -40,7 +40,7 @@
 
   <article class="blog-page">
     <header class="blog-header">
-      <h1>Mutual Information</h1>
+      <h1>What is the Mutual Information $\small{I(X;Y=y)}$</h1>
       <div class="blog-meta">
         Created Oct 9, 2026&nbsp;&middot;&nbsp;<span class="last-updated"></span>&nbsp;&middot;&nbsp;<span class="read-time"></span>
       </div>
@@ -57,12 +57,42 @@
 
     <div class="blog-body">
       <h2 id="introduction">Introduction</h2>
-      <!-- Add blog content here. -->
+      <p>
+        It is well known that the <a href="https://en.wikipedia.org/wiki/Mutual_information" target="_blank" rel="noopener noreferrer">mutual information</a> is defined between random variables $X$ and $Y$ as $I(X;Y) = \sum_{x,y} p(x,y) \log \frac{p(x,y)}{p(x)p(y)}=H(X)-H(X|Y)=H(Y)-H(Y|X)=D_{KL}\left(p(x,y) || p(x)p(y)\right).$
+        And also the <a href="https://en.wikipedia.org/wiki/Pointwise_mutual_information" target="_blank" rel="noopener noreferrer">pointwise mutual information</a> is defined between two events (realizations) $x$ and $y$ as $I(x;y) = \log \frac{p(x,y)}{p(x)p(y)}.$
+      </p>
+      <p>
+        However, this is no single definition of $I(X;Y=y)$. There are two definitions have been discussed and used.
+      </p>
+      <p>
+        When I was an undergraduate student, I learned from the test book that $I(X;Y=y)$ is defined as $I(X;Y=y)$, 
+        but I was not fully convinced, since it is not equal to $H(X)-H(X|Y=y)$. 
+        I mean...how can they be not equal?! 
+        But at that time I could not find any materials that explicitly explain this.
+      </p>
+      <p>
+        Two years later, I learned from Emre Telatar that it can be "understood" by involving an indicator function $I(X;\mathbb{1}_{\{Y=y\}})$, which is a binary random variable. 
+        Another one year later, I came arcoss a paper by Peter Grünwald and Paul Vitányi, which explictly define it as $I(X;Y=y)=H(X)-H(X|Y=y)$.
+      </p>
+      <p>
+        I also received two other points from many people. First, $I(X;Y=y)$ is not well-defined. 
+        Second, one can write any math formula they want, as long as it, to some extent, conforms to formal logic.
+        These points are right but it is not the answer I want. 
+      </p>
+      <p>
+        Now, which is another two years later, I am with ChatGPT and writing this blog. I am asking ChatGPT to dig up 
+        who is able to dig up lots of papers related to this question, and about the relationship with statistical physics.
+      </p>
+
+      
+      <h2 id="main">Main</h2>
+      There is room for criticism, however, about the last derivation: the thermodynamical entropy of the system is known to be given by the Shannon (or, more precisely, the Gibbs) entropy expression only in equilibrium, whereas for non–equilibrium, it is not clear whether it continues to be valid. In fact, there is dispute among physicists on how to define the entropy in non–equilibrium situations, and there are many variations on the theme (see, for example...).
     </div>
+    
   </article>
 
   <footer>
-    <div class="footer-inner">
+    <div class="footer-inner"> 
       <p>&copy; 2026 PAN Wenxin</p>
     </div>
   </footer>
