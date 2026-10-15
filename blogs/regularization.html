@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FBK41DCHCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-FBK41DCHCM');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regularization | PAN Wenxin</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script>
+    MathJax = {
+      loader: {load: ['[tex]/color']},
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        packages: {'[+]': ['color']}
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="site-name">PAN Wenxin</a>
+      <nav>
+        <a href="/#blogs">Blogs</a>
+        <a href="/#resources">Resources</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">&#9680;</button>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-page">
+    <header class="blog-header">
+      <h1>Regularization</h1>
+      <div class="blog-meta">
+        Created Oct 15, 2026&nbsp;&middot;&nbsp;<span class="last-updated"></span>&nbsp;&middot;&nbsp;<span class="read-time"></span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <details open>
+        <summary class="toc-title">Contents</summary>
+        <ol>
+          <li><a href="#introduction">Introduction</a></li>
+        </ol>
+      </details>
+    </nav>
+
+    <div class="blog-body">
+      <h2 id="introduction">Introduction</h2>
+      <!-- Add blog content here. -->
+      Regularization appears in different fields, and act as the same role to provide prior information when the problem is ill-posed, i.e., 
+      has infinite number of solutions, such that the size of solution set is reduced.
+
+      <h2 id="in-machine-learning">In machine learning and inverse problems</h2>
+      <h3 id="linear">Linear case - linear regression</h3>
+      The mathematical structure is the same structure. 
+      $n$ = # features = # parameters to to find. 
+      
+      In a linear model, this is equal to the number of pixels $N \times N$. 
+      If the matrix $X$ does not have full column rank, which is typically a fat matrix, the problem is ill-posed.
+      For a linear model we can go back to check which features are independent, so as to reduce the #features, and thereby reduce #parameters.
+      
+      In a neural network model, $n$ can be much larger than $N \times N$, and almost always gives a ill-posed problem. 
+
+
+      <h3 id="nonlinear">Nonlinear case - neural networks</h3>
+      The parameters (including weights and biases) in a neural network is massive, and way more then the data points we have. 
+      The solution is therefore not determined. The number of solutions is infinite.
+      A fundamental question in neural network is that why gradient descent is able to pick the solution that generalizes well.
+      And also neural network tends to pick smooth functions (lower-order functions).
+
+      <h2 id="in-optimal-transport">In optimal transport</h2>
+      <p>
+      The standard optimal transport problem is a convex optimization problem with a linear objective, which is convex but not strictly convex. 
+      Consequently, the optimal transport plan is not necessarily unique. 
+      Introducing positive entropy regularization makes the objective strictly convex, thereby makes the solution unique.
+      (Actually it is not just strictly convex but also $\epsilon$-strongly convex.)
+      </p>
+      <p>
+      If the original OT problem has multiple optimal solutions, entropic regularization selects the one with maximum entropy among those solutions.
+      </p>
+      <p>
+        Besides this entropic prior information, this entropic regularization also offer computational advantage that leads to the efficient Sinkhorn algorithm.
+      </p>
+
+    </div>
+  </article>
+
+  <footer>
+    <div class="footer-inner">
+      <p>&copy; 2026 PAN Wenxin</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const el = document.querySelector('.last-updated');
+      if (el) {
+        const d = new Date(document.lastModified);
+        const label = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        el.textContent = 'Last updated ' + label;
+      }
+
+      const body = document.querySelector('.blog-body');
+      const rt = document.querySelector('.read-time');
+      if (body && rt) {
+        const words = body.innerText.trim().split(/\s+/).length;
+        const mins = Math.max(1, Math.round(words / 200));
+        rt.textContent = mins + ' min read';
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+  </script>
+
+  <script>
+    (function () {
+      const headings = Array.from(document.querySelectorAll('.blog-body h2[id], .blog-body h3[id]'));
+      const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+      if (!headings.length || !tocLinks.length) return;
+
+      function getActive() {
+        const threshold = window.scrollY + window.innerHeight * 0.25;
+        let active = headings[0];
+        for (const heading of headings) {
+          if (heading.getBoundingClientRect().top + window.scrollY <= threshold) active = heading;
+        }
+        return active;
+      }
+
+      function update() {
+        const activeId = getActive()?.id;
+        tocLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + activeId));
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+  </script>
+</body>
+</html>
