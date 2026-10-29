@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-labelledby="title description">
+  <title id="title">A small feed-forward neural network</title>
+  <desc id="description">Two inputs feed a hidden neuron, then a second hidden neuron, then an output neuron. Edges are labelled with weights, biases enter each non-input neuron, and the prediction is compared with a target in a loss function.</desc>
+  <style>
+    .label { fill: #252525; font-family: Arial; }
+    .layer { fill: #626262; font-family: Arial; font-size: 17px; font-weight: 600; letter-spacing: .4px; }
+    .detail { fill: #626262; font-family: Arial; font-size: 15px; }
+    .weight { fill: #003da5; font-family: Arial; font-size: 16px; font-style: italic; }
+    .edge { fill: none; stroke: #3a3a3a; stroke-width: 2.5; marker-end: url(#arrow); }
+    .input-node { fill: #e9f1ff; stroke: #003da5; stroke-width: 2.5; }
+    .hidden-node { fill: #fff7cc; stroke: #8a6b00; stroke-width: 2.5; }
+    .output-node { fill: #ffe7e7; stroke: #d40000; stroke-width: 2.5; }
+    .divider { stroke: #626262; stroke-width: 1.5; }
+    .loss { fill: #f5f5f5; stroke: #252525; stroke-width: 1.5; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a3a3a" />
+    </marker>
+  </defs>
+
+  <rect width="1200" height="500" fill="#ffffff" />
+  <text class="label" x="60" y="42" font-size="22" font-weight="700">A small feed-forward neural network</text>
+  <text class="detail" x="780" y="42">Parameters: theta = {w, b}</text>
+
+  <text class="layer" x="96" y="100">Input layer</text>
+  <text class="layer" x="386" y="100">Hidden layer 1</text>
+  <text class="layer" x="646" y="100">Hidden layer 2</text>
+  <text class="layer" x="910" y="100">Output layer</text>
+
+  <text class="detail" x="86" y="125">x = (x1, x2)</text>
+
+  <path class="edge" d="M 190 178 L 382 222" />
+  <path class="edge" d="M 190 312 L 382 268" />
+  <path class="edge" d="M 510 245 L 642 245" />
+  <path class="edge" d="M 770 245 L 902 245" />
+
+  <text class="weight" x="286" y="183">w13</text>
+  <text class="weight" x="286" y="320">w23</text>
+  <text class="weight" x="570" y="226">w34</text>
+  <text class="weight" x="830" y="226">w45</text>
+
+  <circle class="input-node" cx="150" cy="170" r="40" />
+  <circle class="input-node" cx="150" cy="320" r="40" />
+  <text class="label" x="150" y="166" text-anchor="middle" font-size="20" font-weight="600">a1</text>
+  <text class="detail" x="150" y="190" text-anchor="middle">= x1</text>
+  <text class="label" x="150" y="316" text-anchor="middle" font-size="20" font-weight="600">a2</text>
+  <text class="detail" x="150" y="340" text-anchor="middle">= x2</text>
+
+  <circle class="hidden-node" cx="450" cy="245" r="60" />
+  <line class="divider" x1="430" y1="195" x2="430" y2="295" />
+  <line class="divider" x1="470" y1="195" x2="470" y2="295" />
+  <text class="label" x="410" y="251" text-anchor="middle" font-size="18" font-weight="600">b3</text>
+  <text class="label" x="450" y="251" text-anchor="middle" font-size="18" font-weight="600">z3</text>
+  <text class="label" x="490" y="251" text-anchor="middle" font-size="18" font-weight="600">a3</text>
+
+  <circle class="hidden-node" cx="710" cy="245" r="60" />
+  <line class="divider" x1="690" y1="195" x2="690" y2="295" />
+  <line class="divider" x1="730" y1="195" x2="730" y2="295" />
+  <text class="label" x="670" y="251" text-anchor="middle" font-size="18" font-weight="600">b4</text>
+  <text class="label" x="710" y="251" text-anchor="middle" font-size="18" font-weight="600">z4</text>
+  <text class="label" x="750" y="251" text-anchor="middle" font-size="18" font-weight="600">a4</text>
+
+  <circle class="output-node" cx="970" cy="245" r="60" />
+  <line class="divider" x1="950" y1="195" x2="950" y2="295" />
+  <line class="divider" x1="990" y1="195" x2="990" y2="295" />
+  <text class="label" x="930" y="251" text-anchor="middle" font-size="18" font-weight="600">b5</text>
+  <text class="label" x="970" y="251" text-anchor="middle" font-size="18" font-weight="600">z5</text>
+  <text class="label" x="1010" y="251" text-anchor="middle" font-size="18" font-weight="600">a5</text>
+
+  <path class="edge" d="M 1025 278 L 1048 352" />
+  <text class="detail" x="1038" y="318">prediction</text>
+  <text class="label" x="1038" y="341" font-size="17" font-weight="600">y-hat = a5</text>
+  <rect class="loss" x="1015" y="365" width="140" height="52" rx="4" />
+  <text class="label" x="1085" y="397" text-anchor="middle" font-size="18" font-weight="600">L(y-hat, y)</text>
+  <text class="detail" x="1085" y="443" text-anchor="middle">target y</text>
+</svg>
