@@ -116,50 +116,62 @@
       <h3 id="training-objective">Training objective</h3>
       <p>
         To predict the noise used in the closed-form construction of the noisy sample $\boldsymbol{x}_t$, the commonly used simplified training objective is 
+      </p>
+      <div class="training-loss-box">
         \[
+          \begin{gathered}
           \mathcal{L} = \mathop{\mathbb{E}}\limits_{T} \ \mathop{\mathbb{E}}\limits_{\boldsymbol{X}_0 } \ \mathop{\mathbb{E}}\limits_{\boldsymbol{\mathcal{E}} } 
-          \left[ \| \boldsymbol{\mathcal{E}} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{X}_T, T) \|^2 \right]
+          \left[ \| \boldsymbol{\mathcal{E}} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{X}_T, T) \|^2 \right] \\[0.65em]
+          \text{with}\ \boldsymbol{X}_T = \sqrt{\bar{\alpha}_T} \boldsymbol{X}_0
+          + \sqrt{1-\bar{\alpha}_T} \boldsymbol{\mathcal{E}}
+          \end{gathered}
         \]
-        \[
-        \text{with}\ \boldsymbol{X}_T = \sqrt{\bar{\alpha}_T} \boldsymbol{X}_0+\sqrt{1-\bar{\alpha}_T} \boldsymbol{\mathcal{E}}
-        \]
+      </div>
+      <p>
         <!-- Notations $t$, $\boldsymbol{x}_0$, $\boldsymbol{x}_t$ and $\boldsymbol{\epsilon}$ are all <b>random variables</b>, <br> -->
         with random variables $T \sim \mathcal{U}(\{1,..., L\})$, $\boldsymbol{X}_0 \sim p_{\text{data}}$, and $\boldsymbol{\mathcal{E}} \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$. <br>
       </p>
       <p>
         The expectations can only be estimated using finite realizations drawn from these distributions. <br>
         By drawing many realizations from these distributions, the training objective can be approximated by
+      </p>
+      <div class="training-loss-box">
         \[
+          \begin{gathered}
           \hat{\mathcal{L}} =
           \sum_{t}\ \sum_{\boldsymbol{x}_0}\ \sum_{\boldsymbol{\epsilon}}
           \left[
           \left\| \boldsymbol{\epsilon}
           - \text{UNet}_{\boldsymbol{\theta}}\left(\boldsymbol{x}_t, t\right)
           \right\|^2
-          \right]
-        \]
-        \[
+          \right] \\[0.65em]
           \text{with}\ \boldsymbol{x}_t
           = \sqrt{\bar{\alpha}_t}\boldsymbol{x}_0
           + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}.
+          \end{gathered}
         \]
+      </div>
+      <p>
         Here $t$, $\boldsymbol{x}_0$, $\boldsymbol{\epsilon}$, and $\boldsymbol{x}_t$ are lowercase because they are realizations of $T$, $\boldsymbol{X}_0$, $\boldsymbol{\mathcal{E}}$, and $\boldsymbol{X}_t$. <br>
       </p>
       <p>
         Computing this empirical loss over all realizations for every update is still too expensive. In practice, we adopt SGD (stochastic gradient descent).
         In each iteration, we pick one image $\boldsymbol{x}_0$ from the training set, one noise realization $\boldsymbol{\epsilon}$, and one time realization $t$.
         Then construct $\boldsymbol{x}_t = \sqrt{\bar{\alpha}_t}\boldsymbol{x}_0+\sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}$ and calculate the single-sample loss
+      </p>
+      <div class="training-loss-box">
         \[
+          \begin{gathered}
           \hat{\mathcal{L}}_{\text{SGD}} =
-          \left\| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{x}_t, t) \right\|^2
-        \]
-        \[
+          \left\| \boldsymbol{\epsilon} - \text{UNet}_{\boldsymbol{\theta}}(\boldsymbol{x}_t, t) \right\|^2 \\[0.65em]
           \text{with}\ \boldsymbol{x}_t
           = \sqrt{\bar{\alpha}_t}\boldsymbol{x}_0
           + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}.
+          \end{gathered}
         \]
+      </div>
+      <p>
         The UNet parameters ${\boldsymbol{\theta}}$ are updated by one gradient step downhill <a href="https://arxiv.org/abs/2006.11239" target="_blank" class="cite">[Ho et al. 2020]</a>.<br>
-
       </p>
       
       <div class="algorithm">
@@ -191,8 +203,13 @@
       <p>
         For example, from the previous training steps we already have a model $\text{UNet}_{{\boldsymbol{\theta}}}$ and it gives a prediction $\text{UNet}_{{\boldsymbol{\theta}}}(\boldsymbol{x}_t, t)=0.3$.
         At this training step we know the realized noise value $\boldsymbol{\epsilon}$ is 0.5, so we calculate the gradient and update ${\boldsymbol{\theta}}$ to make the UNet predict 0.31 instead of 0.3 at this realized pair $(\boldsymbol{x}_t,t)$.
-        Over many training iterations, it learns a function that predicts the <i>expected noise</i> 
-        $\text{UNet}_{\boldsymbol{\theta}^*}(\boldsymbol{x}_t, t) \approx \mathbb{E}[\boldsymbol{\mathcal{E}} \mid \boldsymbol{X}_t=\boldsymbol{x}_t, T=t]$. 
+        Over many training iterations, it learns a function that predicts the <i>expected noise</i>:
+      </p>
+      \[
+      \text{UNet}_{\boldsymbol{\theta}^*}(\boldsymbol{x}_t, t)
+      \approx \mathbb{E}[\boldsymbol{\mathcal{E}} \mid \boldsymbol{X}_t=\boldsymbol{x}_t, T=t].
+      \]
+      <p>
         This can be further validated by Tweedie formula (refer to <a href="score-diffusion.html">Score-based Diffusion Models</a>).
       </p>
 
