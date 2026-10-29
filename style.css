@@ -550,6 +550,11 @@ details[open] .toc-title::after {
   border-radius: 4px;
 }
 
+.training-loss-box,
+.training-loss-box mjx-container {
+  color: #1c1c1e;
+}
+
 .training-loss-box mjx-container[display="true"] {
   margin: 0;
 }
